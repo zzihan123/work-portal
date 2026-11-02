@@ -1,0 +1,1420 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>업무지원 포털</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F5F7; --surface:#FFFFFF; --sunken:#EEF0F3; --line:#DFE2E7; --line-strong:#C9CED6;
+  --text:#262B33; --muted:#78808C; --accent:#2F64AE; --accent-soft:#E6EEF8; --on-accent:#FFFFFF;
+  --ok:#2F7D52; --ok-soft:#E3F1E8; --bad:#BC3B33; --bad-soft:#F8E6E4; --warn:#A86E0C; --warn-soft:#FBF0DC;
+  --term-bg:#FBFBFC; --term-text:#3A414B;
+  --font:"Noto Sans KR",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1B1E23; --surface:#22262C; --sunken:#1E2126; --line:#333941; --line-strong:#454C56;
+    --text:#DCE0E5; --muted:#8E97A3; --accent:#7AA3E0; --accent-soft:#26324A; --on-accent:#14181E;
+    --ok:#6CC08F; --ok-soft:#1F3229; --bad:#E57D74; --bad-soft:#3A2422; --warn:#E0AE55; --warn-soft:#3A2F1A;
+    --term-bg:#1E2126; --term-text:#C3C9D1; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1B1E23; --surface:#22262C; --sunken:#1E2126; --line:#333941; --line-strong:#454C56;
+  --text:#DCE0E5; --muted:#8E97A3; --accent:#7AA3E0; --accent-soft:#26324A; --on-accent:#14181E;
+  --ok:#6CC08F; --ok-soft:#1F3229; --bad:#E57D74; --bad-soft:#3A2422; --warn:#E0AE55; --warn-soft:#3A2F1A;
+  --term-bg:#1E2126; --term-text:#C3C9D1; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{height:100%;margin:0;background:var(--bg);color:var(--text);font:14px/1.5 var(--font)}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.muted{color:var(--muted)}
+.r{text-align:right}
+.grow{flex:1}
+
+/* shell */
+.app{display:grid;grid-template-columns:216px minmax(0,1fr);height:100%}
+.side{background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:14px 10px;gap:2px;min-height:0;overflow:auto}
+.ws{display:flex;align-items:center;gap:8px;padding:4px 8px 14px;cursor:default}
+.ws-badge{width:24px;height:24px;border-radius:6px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-size:12px;font-weight:700;flex:none}
+.ws-name{font-weight:700;font-size:14px;white-space:nowrap}
+.ws .alt{display:none}
+.ws:hover .def{display:none}
+.ws:hover .alt{display:inline}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav-label{font-size:12px;color:var(--muted);padding:12px 8px 4px}
+.nav button{display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;color:var(--text);font:inherit;font-size:13px;padding:7px 8px;border-radius:6px;cursor:pointer;text-align:left}
+.nav button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav button:hover{background:var(--sunken)}
+.nav button[aria-current="page"]{background:var(--accent-soft);color:var(--accent);font-weight:500}
+.ico{width:16px;height:16px;flex:none}
+.side-foot{margin-top:auto;font-size:12px;color:var(--muted);padding:12px 8px 0}
+main{display:flex;flex-direction:column;min-width:0;min-height:0}
+.top{height:48px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 20px;border-bottom:1px solid var(--line);background:var(--surface);flex:none}
+.crumb{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crumb b{color:var(--text);font-weight:500}
+.top-right{display:flex;gap:12px;align-items:center;font-size:12px;color:var(--muted);flex:none}
+#view{flex:1;min-height:0;overflow:auto;padding:20px}
+
+.btn{border:1px solid var(--line-strong);background:var(--surface);color:var(--text);font:inherit;font-size:12px;padding:5px 10px;border-radius:6px;cursor:pointer;white-space:nowrap}
+.btn:hover:not(:disabled){background:var(--sunken)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.primary:hover:not(:disabled){background:var(--accent);filter:brightness(1.08)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.sm{padding:3px 9px}
+
+/* home */
+.page-h{font-size:18px;font-weight:700;margin:0 0 2px}
+.page-sub{color:var(--muted);font-size:13px;margin:0 0 16px}
+.tbl{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow-x:auto}
+.doclist{width:100%;min-width:580px;border-collapse:collapse}
+.doclist th,.doclist td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);font-size:13px}
+.doclist th{font-weight:500;color:var(--muted);background:var(--sunken)}
+.doclist tr:last-child td{border-bottom:0}
+.doclist tr.row{cursor:pointer}
+.doclist tr.row:hover td{background:var(--sunken)}
+.nm{display:inline-flex;align-items:center;gap:8px;font-weight:500}
+
+/* spreadsheet */
+.sheet{display:flex;flex-direction:column;height:100%;min-height:440px;background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.menubar{display:flex;gap:14px;padding:7px 12px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--line);align-items:center;flex-wrap:wrap}
+.menubar .btns{display:flex;gap:6px}
+.fbar{display:flex;align-items:center;border-bottom:1px solid var(--line);font-size:12px;min-height:30px}
+.fbar .ref{width:64px;padding:6px 10px;border-right:1px solid var(--line);font-family:var(--mono)}
+.fbar .fx{padding:6px 10px;color:var(--muted);font-style:italic;border-right:1px solid var(--line)}
+.fbar .val{padding:6px 10px;font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.grid-wrap{flex:1;overflow:auto}
+table.grid{border-collapse:collapse;font-size:12px;user-select:none;-webkit-user-select:none}
+.grid th{background:var(--sunken);color:var(--muted);font-weight:400;border:1px solid var(--line);min-width:56px;height:24px;padding:0 6px;text-align:center;position:sticky;top:0;z-index:1}
+.grid th.rh{min-width:36px;position:sticky;left:0;z-index:1}
+.grid thead th.rh{z-index:2}
+.grid td{border:1px solid var(--line);height:24px;min-width:56px;padding:0 8px;text-align:right;font-family:var(--mono);cursor:cell;background:var(--surface)}
+.grid td:hover{outline:2px solid var(--accent);outline-offset:-2px}
+.grid td.open{background:var(--sunken)}
+.grid td.flag{color:var(--warn);text-align:left;font-family:var(--font)}
+.grid td.mine{color:var(--bad);background:var(--bad-soft);text-align:left}
+.sheettabs{display:flex;gap:2px;padding:0 8px;border-top:1px solid var(--line);background:var(--sunken)}
+.sheettabs span{padding:5px 14px;font-size:12px;color:var(--muted)}
+.sheettabs .on{background:var(--surface);color:var(--text);border:1px solid var(--line);border-top:0}
+.sbar{display:flex;justify-content:space-between;gap:12px;padding:6px 12px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+
+/* terminal */
+.term{display:flex;flex-direction:column;height:100%;min-height:440px;background:var(--term-bg);border:1px solid var(--line);border-radius:8px;overflow:hidden;font-family:var(--mono);font-size:12px;color:var(--term-text)}
+.term-head{display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--surface);color:var(--muted);gap:12px;flex-wrap:wrap}
+.term-body{flex:1;overflow:auto;padding:10px 12px;line-height:1.75;white-space:pre-wrap;word-break:break-all}
+.ln .ts{color:var(--muted)}
+.ln.err{color:var(--bad)}
+.ln .cmd{background:var(--bad-soft);padding:0 5px;border-radius:3px;font-weight:600}
+.ln.fixed{color:var(--muted)}
+.ln.fixed .cmd{background:none;font-weight:400}
+.ln .me{color:var(--accent)}
+.tag-ok{color:var(--ok);font-weight:600}
+.tag-bad{color:var(--bad);font-weight:600}
+.tag-warn{color:var(--warn);font-weight:600}
+.ln.notice{color:var(--accent)}
+.ask{background:var(--accent-soft);color:var(--accent);padding:0 5px;border-radius:3px;font-weight:600}
+.term-in{display:flex;gap:8px;align-items:center;padding:9px 12px;border-top:1px solid var(--line);background:var(--surface);color:var(--muted)}
+.term-in input{flex:1;min-width:0;border:0;background:none;color:var(--text);font:inherit;outline:none}
+
+/* messenger */
+.chat{display:grid;grid-template-columns:220px minmax(0,1fr);height:100%;min-height:440px;background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.chlist{border-right:1px solid var(--line);overflow:auto}
+.ch{padding:10px 14px;border-bottom:1px solid var(--line);font-size:13px}
+.ch.on{background:var(--accent-soft)}
+.ch small{display:block;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.room{display:flex;flex-direction:column;min-height:0}
+.room-h{padding:10px 16px;border-bottom:1px solid var(--line);font-weight:500}
+.msgs{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:8px}
+.msg{max-width:72%;padding:8px 12px;border-radius:10px;font-size:13px;line-height:1.55}
+.msg.them{background:var(--sunken);align-self:flex-start;border-top-left-radius:3px}
+.msg.me{background:var(--accent);color:var(--on-accent);align-self:flex-end;border-top-right-radius:3px}
+.msg.sys{align-self:center;color:var(--muted);font-size:12px;padding:2px 0}
+.msg.typing{color:var(--muted)}
+.replies{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px;border-top:1px solid var(--line);min-height:52px;align-items:center}
+.replies .btn{font-size:13px;padding:6px 12px}
+
+/* messenger episodes */
+.ch{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;color:var(--text);font:inherit;font-size:13px;padding:10px 14px;cursor:pointer}
+.ch:hover{background:var(--sunken)}
+.ch.on{background:var(--accent-soft)}
+.ch-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.cnt{font-size:11px;color:var(--warn);white-space:nowrap}
+.room-h{display:grid;gap:8px;font-weight:400}
+.room-t{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.room-t b{font-weight:500}
+.eps{display:flex;gap:4px;flex-wrap:wrap}
+.ep{border:1px solid var(--line);background:none;color:var(--muted);font:inherit;font-size:12px;padding:2px 10px;border-radius:12px;cursor:pointer}
+.ep.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.ep:disabled{opacity:.5;cursor:default}
+.ep-n{font-size:11px}
+.badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{font-size:11px;padding:2px 8px;border-radius:10px;border:1px dashed var(--line-strong);color:var(--muted)}
+.badge.on{border:1px solid transparent;background:var(--warn-soft);color:var(--warn)}
+.msg .from{font-size:11px;color:var(--muted);margin-bottom:2px}
+.msg.typing div:last-child{color:var(--muted)}
+
+/* tycoon */
+.dash{display:grid;gap:14px}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.kpi .k{font-size:12px;color:var(--muted)}
+.kpi .v{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.cols{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:14px;align-items:start}
+.side-col{display:grid;gap:14px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.panel-h{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);font-size:13px;font-weight:500}
+.panel-h .muted{font-weight:400;font-size:12px}
+.tblx{overflow-x:auto}
+table.lines{width:100%;min-width:480px;border-collapse:collapse}
+.lines td,.lines th{padding:8px 14px;border-bottom:1px solid var(--line);font-size:12px;text-align:left}
+.lines tr:last-child td{border-bottom:0}
+.lines th{color:var(--muted);font-weight:400;background:var(--sunken)}
+.lines .ma{white-space:nowrap;text-align:right}
+.lines .r{text-align:right}
+.bar{height:6px;background:var(--sunken);border-radius:3px;overflow:hidden;min-width:80px}
+.bar i{display:block;height:100%;width:0;background:var(--accent)}
+.bar.done i{background:var(--ok)}
+.bar.burn i{background:var(--bad)}
+.bar.late i{background:var(--warn)}
+.pill{font-size:11px;padding:2px 8px;border-radius:10px;background:var(--sunken);color:var(--muted);white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.order{padding:10px 14px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;font-size:12px}
+.order:last-child{border-bottom:0}
+.order .bar{grid-column:1/-1}
+.up{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);font-size:12px}
+.up:last-child{border-bottom:0}
+.empty{padding:20px 14px;color:var(--muted);font-size:12px}
+
+/* day logic */
+.dayhead{display:flex;align-items:center;gap:20px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 16px}
+.dayhead .k{font-size:12px;color:var(--muted)}
+.dayno{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.dayprog{flex:1;display:grid;gap:6px}
+#bOpen{display:grid;gap:14px}
+.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+.facts div{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border-bottom:1px solid var(--line);font-size:12px}
+.facts div:nth-child(odd){border-right:1px solid var(--line)}
+.facts b{font-size:16px;color:var(--text)}
+.pad{padding:14px}
+.pad p{margin:0 0 12px;font-size:12px}
+.row-btns{display:flex;gap:8px;flex-wrap:wrap}
+table.lines.hist,table.lines.rep{min-width:0}
+.report{max-width:520px}
+.lines tr.sum td{font-weight:700;background:var(--sunken)}
+
+/* golf */
+.golf{display:flex;flex-direction:column;height:100%;min-height:480px;background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.golf-body{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 264px;min-height:0}
+.gl-plot{position:relative;min-height:300px}
+.gl-plot canvas{position:absolute;inset:0;display:block;cursor:crosshair}
+.gl-side{border-left:1px solid var(--line);overflow:auto}
+.gl-sec{padding:14px;border-bottom:1px solid var(--line);display:grid;gap:10px}
+.gl-sec:last-child{border-bottom:0}
+.gl-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px}
+.gl-h b{font-weight:500}
+.gl-h .muted{font-size:12px}
+.gl-field{display:grid;grid-template-columns:30px minmax(0,1fr) 54px 12px;align-items:center;gap:8px;font-size:12px}
+.gl-field input[type=range]{width:100%;accent-color:var(--accent)}
+.gl-field input[type=number]{width:100%;border:1px solid var(--line-strong);border-radius:4px;background:var(--surface);color:var(--text);font:inherit;font-size:12px;padding:3px 6px;text-align:right}
+.gl-field em{font-style:normal;color:var(--muted)}
+.gl-tip{margin:0;font-size:12px}
+.gl-res{font-size:12px;padding:10px 12px;border-radius:6px;background:var(--sunken);display:grid;gap:8px}
+table.lines.gl-card{min-width:0;border:1px solid var(--line)}
+.gl-card tr[data-h]{cursor:pointer}
+.gl-card tr.on td{background:var(--accent-soft)}
+.gl-card tr.locked td{color:var(--muted);cursor:default}
+@media (max-width:860px){
+  .golf{height:auto}
+  .golf-body{grid-template-columns:1fr}
+  .gl-plot{height:320px}
+  .gl-side{border-left:0;border-top:1px solid var(--line)}
+}
+
+/* pizza */
+.pz-open{display:grid;gap:14px}
+.pz-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:14px;align-items:start}
+.pz-ord{display:grid;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line);cursor:pointer;font-size:12px}
+.pz-ord:last-child{border-bottom:0}
+.pz-ord:hover{background:var(--sunken)}
+.pz-ord.on{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent)}
+.pz-ord-h{display:flex;gap:8px;align-items:center}
+.pz-ord-h .pill{margin-left:auto}
+.pz-spec{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;margin:0}
+.pz-spec dt{color:var(--muted)}
+.pz-spec dd{margin:0}
+.pz-form{padding:0 14px}
+.pz-fs{border:0;margin:0;padding:10px 0;border-bottom:1px solid var(--line);min-width:0}
+.pz-fs legend{display:block;font-size:12px;color:var(--muted);padding:0;margin-bottom:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{position:relative}
+.chip input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer}
+.chip span{display:inline-block;padding:4px 11px;border:1px solid var(--line-strong);border-radius:14px;font-size:12px;background:var(--surface);color:var(--text)}
+.chip:hover span{background:var(--sunken)}
+.chip input:checked+span{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.chip input:focus-visible+span{outline:2px solid var(--accent);outline-offset:1px}
+.pz-sum{font-size:12px;margin-bottom:10px;padding:8px 10px;background:var(--sunken);border-radius:6px}
+.pz-log{margin-top:10px;display:grid;gap:4px;font-size:12px;color:var(--muted)}
+.pz-log .ok{color:var(--ok)}
+.pz-log .bad{color:var(--bad)}
+@media (max-width:860px){.pz-cols{grid-template-columns:1fr}}
+
+/* updates v8 */
+.ln .cmd.cmd-done{text-decoration:line-through;font-weight:400;background:none}
+.pz-new{margin:0 0 12px;font-size:12px;color:var(--accent);font-weight:500}
+.pz-memo{display:grid;gap:4px;padding:10px 14px;font-size:12px;border-bottom:1px solid var(--line);background:var(--sunken)}
+.pz-memo div{display:flex;justify-content:space-between;gap:10px}
+.pz-memo b{font-weight:500}
+.panel .pz-memo:last-child{border-bottom:0}
+.pz-tags{margin-left:auto;display:flex;gap:4px}
+.pz-ord-h .pz-tags .pill{margin-left:0}
+.pz-usual{font-style:normal;color:var(--warn);font-weight:500}
+.pz-half{padding:10px 0 0}
+
+/* cover document */
+#cover{position:fixed;inset:0;background:var(--surface);z-index:50;overflow:auto;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.doc-bar{position:sticky;top:0;display:flex;gap:16px;align-items:center;padding:10px 20px;border-bottom:1px solid var(--line);background:var(--surface);font-size:13px;color:var(--muted)}
+.doc-bar b{color:var(--text);font-weight:500}
+.doc{max-width:700px;margin:0 auto;padding:48px 28px 80px;font-size:15px;line-height:1.85}
+.doc h1{font-size:24px;line-height:1.4;margin:0 0 6px}
+.doc .meta{color:var(--muted);font-size:13px;margin-bottom:32px}
+.doc h2{font-size:16px;margin:28px 0 8px}
+.doc p,.doc ol{margin:0 0 12px}
+.caret{display:inline-block;width:1px;height:1.1em;background:var(--text);vertical-align:text-bottom;animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.caret{animation:none}}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--text);color:var(--surface);padding:8px 14px;border-radius:6px;font-size:13px;z-index:60}
+
+@media (max-width:860px){
+  .cols{grid-template-columns:1fr}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:720px){
+  .app{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}
+  .side{flex-direction:row;align-items:center;border-right:0;border-bottom:1px solid var(--line);padding:8px;overflow-x:auto}
+  .ws{padding:0 8px 0 4px}
+  .nav{flex-direction:row}
+  .nav-label,.side-foot{display:none}
+  .nav button{width:auto}
+  .top{padding:0 12px}
+  .top-right .clock{display:none}
+  #view{padding:12px}
+  .chat{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}
+  .chlist{display:flex;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line)}
+  .ch{border-bottom:0;border-right:1px solid var(--line);min-width:150px;flex:none}
+  .msg{max-width:85%}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <aside class="side">
+    <div class="ws" title="업무지원"><span class="ws-badge">업</span><span class="ws-name"><span class="def">업무지원</span><span class="alt">월급루팡</span></span></div>
+    <nav class="nav" id="nav" aria-label="문서"></nav>
+    <div class="side-foot">Esc 빠른 전환</div>
+  </aside>
+  <main>
+    <header class="top">
+      <div class="crumb" id="crumb"></div>
+      <div class="top-right"><span class="clock" id="clock"></span><button class="btn" id="coverBtn">문서 보기</button></div>
+    </header>
+    <section id="view"></section>
+  </main>
+</div>
+
+<div id="cover" hidden>
+  <div class="doc-bar"><b>2026 하반기 디지털채널 개선과제(안)</b><span>파일</span><span>편집</span><span>보기</span><span>삽입</span><span>서식</span></div>
+  <article class="doc">
+    <h1>2026 하반기 디지털채널 개선과제(안)</h1>
+    <div class="meta">디지털채널팀 작성, 최종 수정 오늘</div>
+    <h2>1. 추진 배경</h2>
+    <p>모바일 앱 이용 비중이 지속적으로 증가함에 따라 주요 거래 화면의 이탈률과 문의 유형을 분석한 결과, 이체와 상품 가입 단계에서 반복적인 입력과 안내 문구 부족으로 인한 이탈이 확인되었습니다. 이에 고객 접점별 사용성 개선 과제를 도출하고 우선순위를 정리하고자 합니다.</p>
+    <h2>2. 주요 과제</h2>
+    <ol>
+      <li>앱 메인 화면 정보 구조 개편: 자주 쓰는 메뉴를 사용자 행동 데이터 기준으로 재배치하고, 개인화 영역의 노출 기준을 정비합니다.</li>
+      <li>이체 플로우 단계 축소: 최근 이체 정보 불러오기를 기본값으로 제공하고, 확인 단계의 중복 안내를 통합합니다.</li>
+      <li>접근성 개선: 명도 대비, 터치 영역, 스크린리더 대체 텍스트를 점검하고 디자인 시스템 컴포넌트에 반영합니다.</li>
+    </ol>
+    <h2>3. 추진 일정</h2>
+    <p>11월 중 현황 분석과 시안 작업을 마무리하고, 12월 사용성 테스트를 거쳐 1분기 배포를 목표로 합니다. 세부 일정은 유관 부서 협의 후 확정 예정입니다.</p>
+    <h2>4. 검토 필요 사항</h2>
+    <p>개인화 영역 데이터 활용 범위에 대해 정보보호 부서의 사전 검토가 필요하며, 이체 단계 축소는 내부통제 기준과의 정합성을 함께 확인해야 합니다.<span class="caret"></span></p>
+  </article>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ---------- helpers ---------- */
+const store={
+  get(k,d){try{const v=localStorage.getItem('wgl:'+k);return v===null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem('wgl:'+k,JSON.stringify(v))}catch(e){}}
+};
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const won=n=>'₩'+Math.round(n).toLocaleString('ko-KR');
+const fmtTime=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+const rand=a=>a[Math.floor(Math.random()*a.length)];
+function toast(t){const el=$('#toast');el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2400)}
+const ICON_PATHS={
+  home:'<path d="M2.5 7.5 8 3l5.5 4.5V13h-11z"/>',
+  sheet:'<rect x="2.5" y="2.5" width="11" height="11" rx="1"/><path d="M2.5 6.5h11M2.5 10h11M6.5 2.5v11"/>',
+  log:'<path d="M3 4h10M3 7h7M3 10h10M3 13h5"/>',
+  chat:'<path d="M3 3.5h10v7H7l-3 2.5v-2.5H3z"/>',
+  chart:'<path d="M3.5 13V8.5M7.5 13V4M11.5 13V9.5M2 13.5h12"/>',
+  form:'<rect x="3" y="2.5" width="10" height="11" rx="1"/><path d="M5.5 6h5M5.5 8.5h5M5.5 11h3"/>',
+  scatter:'<path d="M2.5 2.5v11h11"/><circle cx="6" cy="9.5" r="1"/><circle cx="9" cy="6.5" r="1"/><circle cx="12" cy="4.5" r="1"/>'
+};
+const icon=n=>`<svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON_PATHS[n]}</svg>`;
+
+/* ---------- game registry: 새 게임은 여기에 한 줄 추가 ---------- */
+const GAMES=[
+  {id:'mines',  name:'2026_예산집행_검토.xlsx', kind:'스프레드시트', icon:'sheet', owner:'재무기획팀', edited:'오늘',
+   note:()=>{const b=store.get('mines-best',null);return b!==null?`최단 ${fmtTime(b)}`:''}, mount:mountMines},
+  {id:'logs',   name:'prod-api 배포 로그',      kind:'모니터링',     icon:'log',   owner:'플랫폼팀',   edited:'방금',
+   note:()=>{const b=store.get('logs-best-pts',0);return b?`최고 ${b}점`:''}, mount:mountLogs},
+  {id:'chat',   name:'업무 메신저',             kind:'메신저',       icon:'chat',  owner:'김대리',     edited:'5분 전',
+   note:()=>{const n=Object.values(chatSeen()).reduce((a,b)=>a+b.length,0);return n?`엔딩 ${n}/${chatTotal()}`:''}, mount:mountChat},
+  {id:'bungeo', name:'주문 처리 현황',          kind:'대시보드',     icon:'chart', owner:'영업지원팀', edited:'어제',
+   note:()=>{const s=store.get('bungeo',null);return s?`Day ${s.day||1}, 예산 ${won(s.bal||0)}`:''}, mount:mountBungeo},
+  {id:'golf',   name:'목표 달성 시뮬레이션',    kind:'분석',         icon:'scatter', owner:'전략기획팀', edited:'오늘',
+   note:()=>{const s=store.get('golf',null);return s&&s.best?`시나리오 ${Object.keys(s.best).length}/${GOLF_HOLES.length}`:''}, mount:mountGolf},
+  {id:'pizza',  name:'사내 케이터링 발주',      kind:'발주 관리',    icon:'form',  owner:'총무팀',     edited:'오늘',
+   note:()=>{const s=store.get('pizza',null);return s?`Day ${s.day||1}, 누적 ${won(s.total||0)}`:''}, mount:mountPizza},
+];
+
+/* ---------- shell ---------- */
+const S={paused:false,ctx:null,cleanup:null,current:null,prevTitle:''};
+function makeCtx(el){
+  const timers=[];
+  return {el,store,
+    every(ms,fn){const id=setInterval(()=>{if(!S.paused&&!document.hidden)fn()},ms);timers.push(id);return id},
+    later(ms,fn){const id=setTimeout(fn,ms);timers.push(id);return id},
+    stop(){timers.forEach(id=>{clearInterval(id);clearTimeout(id)})}
+  };
+}
+function renderNav(){
+  const nav=$('#nav');
+  nav.innerHTML=`<button data-go="home">${icon('home')}<span>홈</span></button><div class="nav-label">최근 문서</div>`+
+    GAMES.map(g=>`<button data-go="${g.id}">${icon(g.icon)}<span>${esc(g.name)}</span></button>`).join('');
+  nav.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b)go(b.dataset.go)});
+}
+function go(id){
+  if(S.cleanup){try{S.cleanup()}catch(e){}S.cleanup=null}
+  if(S.ctx){S.ctx.stop();S.ctx=null}
+  const g=GAMES.find(x=>x.id===id);
+  const view=$('#view');view.innerHTML='';view.scrollTop=0;
+  S.current=g?g.id:'home';
+  document.querySelectorAll('#nav [data-go]').forEach(b=>{if(b.dataset.go===S.current)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
+  if(!g){
+    $('#crumb').innerHTML='<b>홈</b>';document.title='업무지원 포털';renderHome(view);
+  }else{
+    $('#crumb').innerHTML=`업무지원 / <b>${esc(g.name)}</b>`;document.title=`${g.name} - 업무지원 포털`;
+    S.ctx=makeCtx(view);S.cleanup=g.mount(S.ctx)||null;
+  }
+}
+function renderHome(v){
+  v.innerHTML=`<h1 class="page-h">최근 문서</h1><p class="page-sub">최근에 열어본 문서와 화면입니다.</p>
+  <div class="tbl"><table class="doclist"><thead><tr><th>이름</th><th>유형</th><th>담당</th><th>수정</th><th>비고</th></tr></thead><tbody>
+  ${GAMES.map(g=>`<tr class="row" data-go="${g.id}" tabindex="0"><td><span class="nm">${icon(g.icon)}${esc(g.name)}</span></td><td>${g.kind}</td><td>${g.owner}</td><td>${g.edited}</td><td class="muted">${esc(g.note()||'')}</td></tr>`).join('')}
+  </tbody></table></div>`;
+  const t=$('.doclist',v);
+  t.addEventListener('click',e=>{const r=e.target.closest('[data-go]');if(r)go(r.dataset.go)});
+  t.addEventListener('keydown',e=>{if(e.key==='Enter'){const r=e.target.closest('[data-go]');if(r)go(r.dataset.go)}});
+}
+function toggleCover(force){
+  const c=$('#cover');const show=force===undefined?c.hidden:force;
+  if(show===!c.hidden)return;
+  c.hidden=!show;S.paused=show;
+  if(show){S.prevTitle=document.title;document.title='2026 하반기 디지털채널 개선과제(안) - 문서';if(document.activeElement)document.activeElement.blur()}
+  else{document.title=S.prevTitle||'업무지원 포털'}
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();toggleCover()}});
+$('#cover').addEventListener('dblclick',()=>toggleCover(false));
+$('#coverBtn').addEventListener('click',()=>toggleCover(true));
+function tickClock(){const d=new Date();$('#clock').textContent=`자동 저장됨 ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`}
+tickClock();setInterval(tickClock,30000);
+
+/* ---------- 1. 스프레드시트 지뢰찾기 ---------- */
+function mountMines(ctx){
+  const R=14,C=12,M=24,el=ctx.el;
+  const colName=i=>String.fromCharCode(65+i);
+  el.innerHTML=`<div class="sheet">
+    <div class="menubar"><span>파일</span><span>편집</span><span>보기</span><span>삽입</span><span>서식</span><span>데이터</span><span class="grow"></span>
+      <span class="btns"><button class="btn" id="mFlag" aria-pressed="false">검토 표시</button><button class="btn" id="mNew">새 시트</button></span></div>
+    <div class="fbar"><span class="ref" id="mRef">A1</span><span class="fx">fx</span><span class="val" id="mVal"></span></div>
+    <div class="grid-wrap"><table class="grid" id="mGrid"></table></div>
+    <div class="sheettabs"><span class="on">검토</span><span>요약</span><span>참고</span></div>
+    <div class="sbar"><span id="mStat"></span><span id="mTime"></span></div></div>`;
+  const grid=$('#mGrid',el);
+  let cells,started,over,opened,time,flagMode=false;
+  const nb=i=>{const r=Math.floor(i/C),c=i%C,o=[];for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){if(!dr&&!dc)continue;const rr=r+dr,cc=c+dc;if(rr>=0&&rr<R&&cc>=0&&cc<C)o.push(rr*C+cc)}return o};
+  const td=i=>grid.querySelector(`td[data-i="${i}"]`);
+  function reset(){
+    cells=Array.from({length:R*C},()=>({mine:false,n:0,open:false,flag:false}));
+    started=false;over=false;opened=0;time=0;
+    let h='<thead><tr><th class="rh"></th>'+Array.from({length:C},(_,i)=>`<th>${colName(i)}</th>`).join('')+'</tr></thead><tbody>';
+    for(let r=0;r<R;r++){h+=`<tr><th class="rh">${r+1}</th>`;for(let c=0;c<C;c++)h+=`<td data-i="${r*C+c}"></td>`;h+='</tr>'}
+    grid.innerHTML=h+'</tbody>';
+    stat();$('#mTime',el).textContent='작업 시간 00:00';
+  }
+  function place(safe){
+    const ban=new Set([safe,...nb(safe)]);let k=0;
+    while(k<M){const i=Math.floor(Math.random()*R*C);if(ban.has(i)||cells[i].mine)continue;cells[i].mine=true;k++}
+    cells.forEach((c,i)=>c.n=nb(i).filter(j=>cells[j].mine).length);
+  }
+  function paint(i){const c=cells[i],t=td(i);t.className='';t.textContent='';
+    if(c.open){t.classList.add('open');if(c.n)t.textContent=c.n}
+    else if(c.flag){t.classList.add('flag');t.textContent='검토'}}
+  function open(i){const st=[i];while(st.length){const j=st.pop(),c=cells[j];if(c.open||c.flag)continue;c.open=true;opened++;paint(j);if(c.n===0)nb(j).forEach(k=>{if(!cells[k].open)st.push(k)})}}
+  function toggleFlag(i){const c=cells[i];if(over||c.open)return;c.flag=!c.flag;paint(i);stat()}
+  function click(i){
+    if(over)return;const c=cells[i];
+    if(flagMode){toggleFlag(i);return}
+    if(c.flag||c.open)return;
+    if(!started){place(i);started=true}
+    if(c.mine){lose();return}
+    open(i);stat();
+    if(opened===R*C-M)win();
+  }
+  function lose(){over=true;cells.forEach((c,j)=>{if(c.mine){const t=td(j);t.className='mine';t.textContent='#REF!'}});
+    $('#mStat',el).textContent='#REF! 참조 오류가 발생했습니다. 새 시트로 다시 시도하세요.'}
+  function win(){over=true;const b=store.get('mines-best',null);if(b===null||time<b)store.set('mines-best',time);
+    $('#mStat',el).textContent='검토 완료. 모든 항목을 확인했습니다.';toast('저장되었습니다')}
+  function stat(){if(over)return;const f=cells.filter(c=>c.flag).length;$('#mStat',el).textContent=`남은 검토 항목 ${M-f}건`}
+  grid.addEventListener('click',e=>{const t=e.target.closest('td');if(t)click(+t.dataset.i)});
+  grid.addEventListener('contextmenu',e=>{const t=e.target.closest('td');if(t){e.preventDefault();toggleFlag(+t.dataset.i)}});
+  grid.addEventListener('mouseover',e=>{const t=e.target.closest('td');if(!t)return;const i=+t.dataset.i,c=cells[i];
+    $('#mRef',el).textContent=colName(i%C)+(Math.floor(i/C)+1);
+    $('#mVal',el).textContent=c.open&&c.n?`=COUNTIF(주변범위,"리스크")  → ${c.n}`:''});
+  $('#mNew',el).onclick=reset;
+  const fb=$('#mFlag',el);
+  fb.onclick=()=>{flagMode=!flagMode;fb.setAttribute('aria-pressed',String(flagMode));fb.classList.toggle('primary',flagMode)};
+  ctx.every(1000,()=>{if(started&&!over){time++;$('#mTime',el).textContent='작업 시간 '+fmtTime(time)}});
+  reset();
+}
+
+/* ---------- 2. 로그 타이핑 (레벨 / 일시정지 / 콤보 / 복합 장애) ---------- */
+function mountLogs(ctx){
+  const el=ctx.el;
+  el.innerHTML=`<div class="term"><div class="term-head"><span>prod-api-02  tail -f /var/log/app.log</span><span id="lStat"></span></div>
+    <div class="term-body" id="lBody"></div>
+    <div class="term-in"><span>$</span><input id="lIn" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="명령어 입력 후 Enter" aria-label="명령어 입력"></div></div>`;
+  const body=$('#lBody',el),inp=$('#lIn',el);
+  const EPS=['/api/v1/accounts','/api/v1/transfer','/api/v1/auth/token','/api/v1/notice','/api/v2/cards','/health','/api/v1/loan/rate','/api/v1/push/register'];
+  const FIX=[['Connection pool exhausted','커넥션 풀 초기화'],['Cache miss rate above 90%','캐시 비우기'],['Worker heartbeat lost','워커 재시작'],
+    ['Token signing key expired','토큰 갱신'],['Queue backlog over 5000','대기열 비우기'],['Disk usage 95% on /var','로그 정리'],
+    ['Deploy health check failed','배포 롤백'],['CPU throttled on node-3','서버 증설'],['Search index out of sync','인덱스 재생성'],
+    ['Stale DNS entry','도메인 캐시 갱신'],['Memory leak detected','서버 재시작'],['TLS cert expires in 1 day','인증서 갱신'],
+    ['Session store latency high','세션 저장소 점검'],['Batch job timeout','배치 재실행'],['Push gateway unreachable','푸시 서버 재연결']];
+  const norm=t=>t.replace(/\s+/g,'').toLowerCase();
+  const YES=['네','예','응','ㅇ','ㅇㅇ','y','yes'],NO=['아니요','아니오','아니','ㄴ','ㄴㄴ','n','no'];
+  const need=l=>5+l*2;
+  let st=null,mode='idle',paused=false;
+  const ts=()=>{const d=new Date();return d.toTimeString().slice(0,8)+'.'+String(d.getMilliseconds()).padStart(3,'0')};
+  function line(html,cls=''){
+    const d=document.createElement('div');d.className='ln '+cls;d.innerHTML=`<span class="ts">${ts()}</span> ${html}`;
+    const stick=body.scrollTop+body.clientHeight>=body.scrollHeight-40;
+    body.appendChild(d);while(body.children.length>250)body.firstChild.remove();
+    if(stick)body.scrollTop=body.scrollHeight;return d;
+  }
+  function info(){
+    if(Math.random()<.82)line(`INFO  ${Math.random()<.7?'GET ':'POST'} ${rand(EPS)} 200 ${Math.floor(8+Math.random()*120)}ms`);
+    else line(`DEBUG gc pause ${Math.floor(Math.random()*40)}ms heap=${Math.floor(300+Math.random()*400)}MB`);
+  }
+  function err(){
+    const open=st.errs.flatMap(e=>e.cmds),pool=FIX.filter(f=>!open.includes(f[1]));if(pool.length<2)return;
+    const complexRate=st.lvl>=2?Math.min(.5,.18+.08*(st.lvl-2)):0;
+    if(Math.random()<complexRate){
+      const [a,b]=[...pool].sort(()=>Math.random()-.5);
+      const d=line(`ERROR ${a[0]} (복합 장애)  조치: <span class="cmd">${a[1]}</span> → <span class="cmd">${b[1]}</span> <span class="tag"></span>`,'err');
+      st.errs.push({cmds:[a[1],b[1]],step:0,born:st.t,el:d,complex:true});
+    }else{
+      const [msg,cmd]=rand(pool);
+      const d=line(`ERROR ${msg}  조치: <span class="cmd">${cmd}</span> <span class="tag"></span>`,'err');
+      st.errs.push({cmds:[cmd],step:0,born:st.t,el:d,complex:false});
+    }
+  }
+  function status(){
+    $('#lStat',el).textContent=(mode==='play'||mode==='level')
+      ?`레벨 ${st.lvl+1}  처리 ${st.lvlScore}/${need(st.lvl)}  점수 ${st.pts}${st.combo>=2?`  콤보 x${st.combo}`:''}  미해결 ${st.inc}/3${paused?'  일시정지':''}`
+      :`최고 점수 ${store.get('logs-best-pts',0)}`;
+  }
+  function saveBest(){const b=store.get('logs-best-pts',0);if(st.pts>b){store.set('logs-best-pts',st.pts);line('INFO  최고 점수를 갱신했습니다.')}}
+  function ask(text){line(`NOTICE ${text} <span class="ask">네 / 아니요</span>`,'notice')}
+  function setup(lvl,score,pts){
+    st={t:0,lvl,score,pts:pts||0,lvlStart:score,lvlStartPts:pts||0,lvlScore:0,combo:0,inc:0,errs:[],nextInfo:0,nextErr:1800};
+    mode='play';paused=false;
+  }
+  function begin(lvl,score,pts){
+    body.innerHTML='';setup(lvl,score,pts);
+    line(`INFO  monitoring session started, level ${lvl+1}`);
+    line('INFO  Tab 키를 누르면 일시정지, 다시 누르면 재개됩니다.');
+    status();inp.focus();
+  }
+  function levelUp(){
+    mode='level';
+    st.errs.forEach(e=>{e.el.classList.add('fixed');e.el.querySelector('.tag').innerHTML='<span class="tag-ok">[AUTO-RESOLVED]</span>'});st.errs=[];
+    line(`<span class="tag-ok">LEVEL UP</span> 레벨 ${st.lvl+1} 완료. 누적 처리 ${st.score}건, 점수 ${st.pts}`,'notice');
+    if(st.lvl+1===2)line('NOTICE 레벨 3부터 명령어 두 개를 순서대로 입력해야 하는 복합 장애가 등장합니다.','notice');
+    ask(`레벨 ${st.lvl+2}로 계속 진행할까요?`);
+    status();
+  }
+  function nextLevel(){
+    const lvl=st.lvl+1,score=st.score,pts=st.pts;setup(lvl,score,pts);
+    line(`INFO  level ${lvl+1} started. 장애 발생 빈도가 높아지고 처리 시간이 짧아집니다.`,'notice');status();
+  }
+  function stopAndSave(lvl,score,pts,msg){
+    mode='idle';paused=false;store.set('logs-ck',{lvl,score,pts});saveBest();
+    line(`INFO  ${msg} 다음에 시작하면 레벨 ${lvl+1}부터 이어서 할 수 있습니다.`);
+    line('INFO  Enter를 누르면 다시 시작합니다.');status();
+  }
+  function gameOver(){
+    line(`<span class="tag-bad">SESSION CLOSED</span> 미해결 장애 3건으로 레벨 ${st.lvl+1}이 중단되었습니다.`);
+    stopAndSave(st.lvl,st.lvlStart,st.lvlStartPts,'이번 레벨 시작 시점으로 저장했습니다.');
+  }
+  ctx.every(100,()=>{
+    if(mode!=='play'||paused)return;st.t+=100;
+    if(st.t>=st.nextInfo){info();st.nextInfo=st.t+250+Math.random()*700}
+    if(st.t>=st.nextErr){err();const gap=Math.max(1400,4200-st.lvl*350);st.nextErr=st.t+gap*(0.7+Math.random()*0.6)}
+    const life=Math.max(5000,11000-st.lvl*600);
+    st.errs=st.errs.filter(e=>{if(st.t-e.born>life*(e.complex?1.7:1)){e.el.querySelector('.tag').innerHTML='<span class="tag-bad">[UNRESOLVED]</span>';st.inc++;if(st.combo>=2)line(`WARN  콤보가 끊겼습니다 (x${st.combo})`);st.combo=0;return false}return true});
+    if(st.inc>=3)gameOver();else status();
+  });
+  function answer(v){const n=norm(v);return YES.includes(n)?'yes':NO.includes(n)?'no':null}
+  inp.addEventListener('keydown',e=>{
+    if(e.key==='Tab'){
+      e.preventDefault();
+      if(mode==='play'){paused=!paused;line(paused?'<span class="tag-warn">PAUSED</span> 일시정지되었습니다. Tab을 누르면 재개합니다.':'INFO  monitoring resumed');status()}
+      return;
+    }
+    if(e.key!=='Enter'||e.isComposing||e.keyCode===229)return;
+    const v=inp.value.trim();inp.value='';
+    if(mode==='idle'){
+      const ck=store.get('logs-ck',null);
+      if(ck){mode='resume';body.innerHTML='';ask(`저장된 레벨 ${ck.lvl+1}부터 이어서 할까요? (아니요를 입력하면 레벨 1부터 시작합니다)`)}
+      else begin(0,0,0);
+      return;
+    }
+    if(mode==='resume'||mode==='level'){
+      if(!v)return;line(`<span class="me">$ ${esc(v)}</span>`);
+      const a=answer(v);
+      if(!a){line('WARN  네 또는 아니요를 입력하세요.');return}
+      if(mode==='resume'){
+        if(a==='yes'){const ck=store.get('logs-ck',{lvl:0,score:0,pts:0});begin(ck.lvl,ck.score,ck.pts||0)}
+        else{store.set('logs-ck',null);begin(0,0,0)}
+      }else{
+        if(a==='yes')nextLevel();
+        else stopAndSave(st.lvl+1,st.score,st.pts,'세션을 저장하고 종료했습니다.');
+      }
+      return;
+    }
+    if(paused){line('INFO  일시정지 중입니다. Tab을 누르면 재개합니다.');return}
+    if(!v)return;line(`<span class="me">$ ${esc(v)}</span>`);
+    const i=st.errs.findIndex(x=>norm(x.cmds[x.step])===norm(v));
+    if(i>=0){
+      const x=st.errs[i],spans=x.el.querySelectorAll('.cmd');spans[x.step].classList.add('cmd-done');
+      if(x.step+1<x.cmds.length){x.step++;line(`<span class="tag-ok">OK</span>    ${esc(v)} completed, 다음 조치: ${esc(x.cmds[x.step])}`);status();return}
+      st.errs.splice(i,1);x.el.classList.add('fixed');x.el.querySelector('.tag').innerHTML='<span class="tag-ok">[RESOLVED]</span>';
+      st.combo++;const gain=(x.complex?30:10)+Math.min(20,(st.combo-1)*2);
+      st.score++;st.lvlScore++;st.pts+=gain;
+      line(`<span class="tag-ok">OK</span>    ${esc(v)} completed  +${gain}${st.combo>=2?` (콤보 x${st.combo})`:''}`);
+      if(st.combo>0&&st.combo%5===0)line(`<span class="tag-ok">COMBO x${st.combo}</span> 연속 처리 보너스가 적용 중입니다.`,'notice');
+      if(st.lvlScore>=need(st.lvl)){levelUp();return}
+    }else{
+      line(`WARN  no matching incident for: ${esc(v)}`);
+      if(st.combo>=2)line(`WARN  콤보가 끊겼습니다 (x${st.combo})`);st.combo=0;
+    }
+    status();
+  });
+  line('INFO  prod-api-02 log stream attached');
+  line('INFO  ERROR가 뜨면 옆에 표시된 조치 명령어를 입력해 처리하세요. 미해결 3건이면 중단됩니다.');
+  line('INFO  레벨마다 정해진 건수를 처리하면 레벨 업. 연속으로 처리하면 콤보 보너스가 붙습니다. Tab 키로 일시정지할 수 있습니다.');
+  line('INFO  Enter를 누르면 시작합니다.');
+  status();ctx.later(0,()=>inp.focus());
+}
+
+/* ---------- 3. 메신저 어드벤처 (채널별 에피소드) ---------- */
+/* say 항목: '문장'(채널 기본 발신자) 또는 ['보낸 사람','문장'] / opts: [답장, 다음 노드, 변수?] / end: 엔딩 이름 */
+const CHAT_DATA=[
+  {id:'kim',name:'김대리',who:'김대리',preview:'혹시 지금 바빠요?',eps:[
+    {id:'kim1',title:'붕어빵 트럭',nodes:{
+      s1:{say:['혹시 지금 바빠요?','1층 앞에 붕어빵 트럭 왔대요 🐟'],opts:[['헐 진짜요? 바로 갈게요','s2a'],['지금 회의 들어가야 해서요…','s2b']]},
+      s2a:{say:['근데 팀장님이 지금 자리 쪽으로 오고 계세요','어떡하죠?'],opts:[['프린터 가는 척할게요','s3a'],['팀장님도 같이 가자고 해요','s3b']]},
+      s2b:{say:['아쉽다… 그럼 제가 사다 드릴까요?','팥이랑 슈크림 중에 뭐 드실래요?'],opts:[['팥이죠','s3c',{flavor:'팥'}],['슈크림이요','s3c',{flavor:'슈크림'}]]},
+      s3a:{say:['프린터 앞에서 팀장님이랑 딱 마주치셨죠? 😇','팀장님이 ‘마침 잘됐다, 이것 좀 같이 보자’ 하시던데요'],opts:[['네… (자리로 돌아간다)','endBad'],['팀장님 붕어빵 좋아하세요?','s3b']]},
+      s3b:{say:['팀장님이 웃으시더니','‘오늘은 내가 쏠게’ 하셨어요!!'],opts:[['역시 우리 팀장님','endBest']]},
+      s3c:{say:v=>[`${v.flavor||'팥'} 붕어빵 사 왔어요!`,'줄이 길어서 마지막 남은 거 겨우 샀어요','책상 위에 두고 갈게요'],opts:[['김대리님 최고예요','endKind']]},
+      endBad:{end:'붕어빵 대신 엑셀'},endBest:{end:'법카 붕어빵'},endKind:{end:'다정한 동료'}}},
+    {id:'kim2',title:'회식 빠지기',nodes:{
+      s1:{say:['오늘 저녁 팀 회식 있는 거 아시죠?','저 오늘은 진짜 빠지고 싶어요 😭'],opts:[['같이 핑계 만들어 봐요','a'],['1차만 하고 같이 나가요','b']]},
+      a:{say:['좋아요! 뭐라고 하죠?'],opts:[['택배 받아야 한다고 해요','endA'],['치과 예약 있다고 해요','a2']]},
+      a2:{say:['치과… 그거 지난달에도 썼어요','팀장님이 ‘치아가 많이 안 좋구나’ 하셨거든요'],opts:[['그럼 그냥 같이 가요','endB']]},
+      b:{say:['오 그게 현실적이네요','근데 방금 2차는 노래방이라고 공지 떴어요…'],opts:[['1차 끝나자마자 탈출해요','endA2'],['…노래방은 가야죠','endC']]},
+      endA:{say:['팀장님이 ‘택배 중요하지’ 하고 보내 주셨어요 ㅋㅋ'],end:'택배의 기적'},
+      endA2:{say:['계산하는 사이에 신발 신고 나왔어요','완벽한 퇴장이었어요'],end:'닌자 퇴장'},
+      endB:{say:['결국 둘 다 끝까지 있었네요…'],end:'결국 풀참석'},
+      endC:{say:['탬버린 제일 열심히 치신 분 누구였죠? 👏'],end:'노래방 MVP'}}}
+  ]},
+  {id:'design',name:'디자인팀',group:true,preview:'시안 v3 공유드립니다',eps:[
+    {id:'design1',title:'로고 더 크게',nodes:{
+      s1:{say:[['박선임','시안 v3 공유드립니다'],['박선임','근데 현업에서 로고 좀 더 크게 해달래요'],['최주임','또요…?']],opts:[['요청대로 키워 봐요','a'],['원래 크기가 맞다고 설득해 봐요','b']]},
+      a:{say:[['박선임','200% 키웠습니다'],['최주임','화면 절반이 로고예요 ㅋㅋㅋ']],opts:[['그대로 보내요','endA'],['150%로 타협해요','endB']]},
+      b:{say:[['최주임','근거 자료 정리해 볼게요'],['박선임','사용성 테스트 결과 붙이면 될 것 같아요']],opts:[['데이터로 설득해요','endC'],['그냥 키워 줘요…','a']]},
+      endA:{say:[['박선임','현업 답장: ‘너무 좋네요!’'],['최주임','……']],end:'로고가 주인공'},
+      endB:{say:[['박선임','둘 다 만족하는 크기로 마무리했어요']],end:'타협의 기술'},
+      endC:{say:[['최주임','현업에서 원래 크기로 가자고 하셨어요!'],['박선임','데이터 최고']],end:'데이터의 승리'}}},
+    {id:'design2',title:'최종_진짜최종',nodes:{
+      s1:{say:[['최주임','파일명이 최종_진짜최종_v7인데 이거 맞나요?'],['박선임','아 그거 아니고 최종_진짜최종_v7(1)이요']],opts:[['파일명 규칙을 정하자고 해요','a'],['일단 (1) 열어 봐요','b']]},
+      a:{say:[['박선임','좋아요, 날짜_버전 형식으로 갈까요?'],['최주임','누가 가이드 만들어요?']],opts:[['제가 만들게요','endA'],['다음 주에 같이 정해요','endB']]},
+      b:{say:[['최주임','열었더니 v5 내용인데요…?'],['박선임','어…?']],opts:[['다 같이 찾아봐요','endC']]},
+      endA:{say:[['최주임','가이드 공유 감사합니다! 바로 적용할게요']],end:'파일명 수호자'},
+      endB:{say:[['박선임','(다음 주에도 정하지 못했다고 한다)']],end:'다음 주의 나에게'},
+      endC:{say:[['최주임','휴지통에서 찾았어요!!'],['박선임','진짜 최종은 최종_v3이었네요']],end:'파일 고고학자'}}}
+  ]},
+  {id:'lead',name:'팀장님',who:'팀장님',preview:'내일 리뷰 10시로 옮길게요',eps:[
+    {id:'lead1',title:'리뷰 일정',nodes:{
+      s1:{say:['내일 리뷰 10시로 옮길게요','그리고 시안 오늘 중으로 한 번 볼 수 있을까요?'],opts:[['네, 6시 전에 드릴게요','a'],['내일 오전까지 가능할까요?','b']]},
+      a:{say:['좋아요','근데 아까 지나가다 보니까 화면에 띄워 둔 거 뭐예요? 👀'],opts:[['예산 검토 파일입니다','endA'],['…붕어빵 주문 현황이요','endB']]},
+      b:{say:['음… 그럼 오전 9시까지만 부탁해요'],opts:[['넵!','endC']]},
+      endA:{say:['아 그렇구나, 수고 많아요'],end:'완벽한 위장'},
+      endB:{say:['붕어빵? 나도 하나 줘요'],end:'솔직한 자백'},
+      endC:{say:['(오늘 밤이 길어질 예정입니다)'],end:'아침형 마감'}}},
+    {id:'lead2',title:'칭찬인가 시험인가',nodes:{
+      s1:{say:['이번 시안 좋던데요','혹시 다음 분기 과제도 맡아 줄 수 있어요?'],opts:[['영광입니다!','a'],['지금 일정이 좀 빠듯해서요…','b']]},
+      a:{say:['역시 믿고 맡길게요','과제는 세 개예요'],opts:[['…세 개요?','endA']]},
+      b:{say:['그래요, 일정부터 같이 정리해 봐요'],opts:[['감사합니다','endB'],['그래도 하나는 해 볼게요','endC']]},
+      endA:{say:['(다음 분기 캘린더가 꽉 찼습니다)'],end:'의욕 과다'},
+      endB:{say:['우선순위 정리해서 내일 다시 얘기해요'],end:'건강한 협상'},
+      endC:{say:['좋아요, 제일 재밌는 걸로 줄게요'],end:'적당한 의욕'}}}
+  ]},
+  {id:'notice',name:'공지',group:true,preview:'11월 보안점검 일정 안내',eps:[
+    {id:'notice1',title:'보안점검',nodes:{
+      s1:{say:[['총무팀','[안내] 오늘 오후 3시 PC 보안점검이 진행됩니다'],['총무팀','점검 담당자가 자리로 방문할 예정입니다']],opts:[['미리 화면을 정리해 둔다','a'],['설마 오겠어… 계속한다','b']]},
+      a:{say:[['총무팀','점검 담당자가 도착했습니다']],opts:[['Esc를 누른다','endA'],['브라우저를 통째로 닫는다','endB']]},
+      b:{say:[['총무팀','점검 담당자가 도착했습니다'],['총무팀','담당자가 모니터를 보고 있습니다…']],opts:[['주문 처리 현황 화면 그대로 둔다','endC']]},
+      endA:{say:[['총무팀','점검 결과: 이상 없음']],end:'Esc 장인'},
+      endB:{say:[['총무팀','점검 결과: 이상 없음'],['총무팀','(타이쿤 진행 상황도 함께 사라졌습니다)']],end:'흔적 삭제'},
+      endC:{say:[['총무팀','담당자: 매출 관리 열심히 하시네요']],end:'위장의 완성'}}},
+    {id:'notice2',title:'사내 체육대회',nodes:{
+      s1:{say:[['총무팀','[안내] 사내 체육대회 참가 신청을 받습니다'],['총무팀','종목: 피구, 줄다리기, 응원단']],opts:[['피구 신청','a'],['응원단 신청','b']]},
+      a:{say:[['총무팀','피구 신청이 완료되었습니다'],['김대리','같은 팀이네요!! 저 피구 에이스예요']],opts:[['앞에 서서 공 잡을게요','endA'],['뒤에 숨어 있을게요','endB']]},
+      b:{say:[['총무팀','응원단은 단체 율동이 있습니다'],['총무팀','연습은 매일 점심시간입니다']],opts:[['…취소할 수 있나요?','endC']]},
+      endA:{say:[['김대리','공 다 잡으셨어요!! 우승이에요 🏆']],end:'인간 방패'},
+      endB:{say:[['김대리','끝까지 살아남은 사람이 우리 팀에서 혼자예요 ㅋㅋ']],end:'최후의 생존자'},
+      endC:{say:[['총무팀','줄다리기로 변경되었습니다']],end:'점심 사수'}}}
+  ]}
+];
+const chatEnds=ep=>Object.entries(ep.nodes).filter(([,n])=>n.end).map(([id,n])=>({id,name:n.end}));
+const chatTotal=()=>CHAT_DATA.reduce((a,c)=>a+c.eps.reduce((b,e)=>b+chatEnds(e).length,0),0);
+function chatSeen(){
+  let s=store.get('chat-v2',null);
+  if(!s){s={};const old=store.get('chat-endings',[]);if(old.length)s.kim1=old.slice();store.set('chat-v2',s)}
+  return s;
+}
+
+function mountChat(ctx){
+  const el=ctx.el,CH=CHAT_DATA,seen=chatSeen();
+  el.innerHTML=`<div class="chat"><div class="chlist" id="cList"></div>
+    <div class="room"><div class="room-h"><div class="room-t"><b id="cName"></b><div class="eps" id="cEps"></div></div><div class="badges" id="cBadges"></div></div>
+    <div class="msgs" id="cMsgs"></div><div class="replies" id="cRep"></div></div></div>`;
+  const list=$('#cList',el),eps=$('#cEps',el),badges=$('#cBadges',el),msgs=$('#cMsgs',el),rep=$('#cRep',el);
+  const got=ep=>seen[ep.id]||[];
+  const unlocked=(ch,i)=>i===0||got(ch.eps[i-1]).length>0;
+  const latest=ch=>{let b=0;ch.eps.forEach((e,i)=>{if(unlocked(ch,i))b=i});return b};
+  let chI=0,epI=latest(CH[0]),run=0,cur=[],vars={};
+
+  function renderList(){
+    list.innerHTML=CH.map((c,i)=>{const n=c.eps.reduce((a,e)=>a+got(e).length,0),m=c.eps.reduce((a,e)=>a+chatEnds(e).length,0);
+      return `<button class="ch${i===chI?' on':''}" data-ch="${i}"><span class="ch-top"><b>${esc(c.name)}</b>${n?`<span class="cnt">🏅 ${n}/${m}</span>`:''}</span><small>${esc(c.preview)}</small></button>`}).join('');
+  }
+  function renderEps(){
+    const ch=CH[chI];$('#cName',el).textContent=ch.name;
+    eps.innerHTML=ch.eps.map((e,i)=>{const u=unlocked(ch,i),d=got(e).length;
+      return `<button class="ep${i===epI?' on':''}" data-ep="${i}"${u?'':' disabled title="이전 화에서 엔딩을 하나 보면 열립니다"'}>${i+1}화 ${u?esc(e.title):'잠김'}${d?` <span class="ep-n">${d}/${chatEnds(e).length}</span>`:''}</button>`}).join('');
+  }
+  function renderBadges(){
+    const ep=CH[chI].eps[epI];
+    badges.innerHTML=chatEnds(ep).map(x=>got(ep).includes(x.id)?`<span class="badge on">🏅 ${esc(x.name)}</span>`:'<span class="badge">???</span>').join('');
+  }
+  const scroll=()=>{msgs.scrollTop=msgs.scrollHeight};
+  function bubble(who,text,typing){
+    const w=document.createElement('div');w.className='msg them'+(typing?' typing':'');
+    if(CH[chI].group){const f=document.createElement('div');f.className='from';f.textContent=who;w.append(f)}
+    const b=document.createElement('div');b.textContent=text;w.append(b);msgs.append(w);scroll();return {el:w,body:b};
+  }
+  function simple(cls,text){const d=document.createElement('div');d.className='msg '+cls;d.textContent=text;msgs.append(d);scroll()}
+  function startEp(){run++;msgs.innerHTML='';rep.innerHTML='';cur=[];vars={};play('s1')}
+  function play(id){
+    const my=run,ch=CH[chI],n=ch.eps[epI].nodes[id];rep.innerHTML='';cur=[];
+    const lines=(typeof n.say==='function'?n.say(vars):n.say)||[];let k=0;
+    const next=()=>{
+      if(my!==run)return;
+      if(k>=lines.length){
+        if(n.end)finish(id,n);
+        else{cur=n.opts;rep.innerHTML=cur.map((o,i)=>`<button class="btn" data-i="${i}">${esc(o[0])}</button>`).join('')}
+        return;
+      }
+      const [who,text]=Array.isArray(lines[k])?lines[k]:[ch.who,lines[k]];
+      const t=bubble(who,'입력 중…',true);
+      ctx.later(500+text.length*22,()=>{if(my!==run)return;t.body.textContent=text;t.el.classList.remove('typing');k++;scroll();ctx.later(250,next)});
+    };
+    next();
+  }
+  function finish(id,n){
+    const ch=CH[chI],ep=ch.eps[epI],hasNext=epI+1<ch.eps.length;
+    const wasLocked=hasNext&&!unlocked(ch,epI+1);
+    const l=got(ep).slice(),isNew=!l.includes(id);
+    if(isNew){l.push(id);seen[ep.id]=l;store.set('chat-v2',seen)}
+    simple('sys',`엔딩: ${n.end}${isNew?', 새 배지를 획득했습니다':''}`);
+    simple('sys',`이 화의 엔딩 ${l.length}/${chatEnds(ep).length}`);
+    if(wasLocked&&unlocked(ch,epI+1))simple('sys',`${epI+2}화가 열렸습니다`);
+    renderList();renderEps();renderBadges();
+    rep.innerHTML='<button class="btn" data-again="1">다시 하기</button>'+(hasNext&&unlocked(ch,epI+1)?`<button class="btn primary" data-next="1">${epI+2}화 보기</button>`:'');
+  }
+  list.addEventListener('click',e=>{const b=e.target.closest('[data-ch]');if(!b)return;chI=+b.dataset.ch;epI=latest(CH[chI]);renderList();renderEps();renderBadges();startEp()});
+  eps.addEventListener('click',e=>{const b=e.target.closest('[data-ep]');if(!b||b.disabled)return;epI=+b.dataset.ep;renderEps();renderBadges();startEp()});
+  rep.addEventListener('click',e=>{
+    const b=e.target.closest('button');if(!b)return;
+    if(b.dataset.again){startEp();return}
+    if(b.dataset.next){epI++;renderEps();renderBadges();startEp();return}
+    const o=cur[+b.dataset.i];if(!o)return;
+    rep.innerHTML='';cur=[];simple('me',o[0]);if(o[2])Object.assign(vars,o[2]);
+    const my=run;ctx.later(450,()=>{if(my===run)play(o[1])});
+  });
+  renderList();renderEps();renderBadges();startEp();
+  return ()=>{run++};
+}
+
+/* ---------- 4. 붕어빵 타이쿤 (Day 레벨 / 시즌 메뉴 / 알바생) ---------- */
+function mountBungeo(ctx){
+  const el=ctx.el;
+  const MENU=[{f:'팥',price:1000,cost:0},{f:'슈크림',price:1200,cost:0},{f:'피자',price:1500,cost:5000,desc:'신메뉴 출시: 피자'},
+    {f:'고구마',price:1400,cost:8000,desc:'시즌 메뉴: 고구마'},{f:'민트초코',price:1600,cost:12000,desc:'시즌 메뉴: 민트초코'}];
+  const PRICE=Object.fromEntries(MENU.map(m=>[m.f,m.price]));
+  const ALBA_COST=10000,ALBA_EVERY=1200;
+  const BAKE=6000,BURN=5000,MAXM=8,DAY_MS=90000,LAST_CALL=10000;
+  const sv=Object.assign({day:1,bal:0,total:0,molds:3,menu:null,alba:false,history:[]},store.get('bungeo',{}));
+  if(!Array.isArray(sv.menu))sv.menu=['팥','슈크림'].concat(sv.pizza?['피자']:[]);
+  delete sv.pizza;
+  if(!(sv.day>=1))sv.day=1;
+  if(!Array.isArray(sv.history))sv.history=[];
+  const save=()=>store.set('bungeo',{day:sv.day,bal:sv.bal,total:sv.total,molds:sv.molds,menu:sv.menu,alba:sv.alba,history:sv.history.slice(-30)});
+  const flavors=()=>MENU.filter(m=>sv.menu.includes(m.f)).map(m=>m.f);
+  const target=d=>4000+d*2500;
+  const bonus=d=>1000*d;
+  const orderGap=d=>Math.max(2600,7000-d*450);
+  const patience=d=>Math.max(15000,32000-d*1300);
+  const moldCost=()=>2000*(sv.molds-2);
+  let st=null,phase='ready',resetArmed=false;
+
+  el.innerHTML=`<div class="dash">
+    <div class="dayhead"><div><div class="k">영업일</div><div class="dayno" id="bDay"></div></div>
+      <div class="dayprog" id="bProgWrap" hidden><div class="k" id="bClock"></div><div class="bar"><i id="bProg"></i></div></div></div>
+    <section id="bReady"></section>
+    <section id="bOpen" hidden>
+      <div class="kpis">
+        <div class="kpi"><div class="k">오늘 매출</div><div class="v" id="bSales"></div></div>
+        <div class="kpi"><div class="k">목표 달성률</div><div class="v" id="bRate"></div></div>
+        <div class="kpi"><div class="k">처리 주문</div><div class="v" id="bServed"></div></div>
+        <div class="kpi"><div class="k">이탈 고객</div><div class="v" id="bLost"></div></div>
+      </div>
+      <div class="cols">
+        <div class="panel"><div class="panel-h"><span>생산 라인 <span class="pill ok" id="bAlba" hidden>알바생 근무 중</span></span><span class="muted" id="bStock"></span></div>
+          <div class="tblx"><table class="lines"><thead><tr><th>라인</th><th>품목</th><th>진행률</th><th>상태</th><th class="r">작업</th></tr></thead><tbody id="bMolds"></tbody></table></div></div>
+        <div class="panel"><div class="panel-h"><span>대기 주문</span><span class="muted" id="bQ"></span></div><div id="bOrders"></div></div>
+      </div>
+    </section>
+    <section id="bReport" hidden></section>
+  </div>`;
+  const R=$('#bReady',el),O=$('#bOpen',el),P=$('#bReport',el),tb=$('#bMolds',el),oBox=$('#bOrders',el);
+
+  function view(v){
+    R.hidden=v!=='ready';O.hidden=v!=='open';P.hidden=v!=='closed';
+    $('#bProgWrap',el).hidden=v!=='open';$('#bDay',el).textContent=`Day ${sv.day}`;
+  }
+
+  /* 영업 준비 */
+  function showReady(){
+    phase='ready';resetArmed=false;view('ready');
+    const mc=moldCost(),full=sv.molds>=MAXM;
+    const hist=sv.history.slice(-5).reverse();
+    R.innerHTML=`<div class="cols">
+      <div class="panel"><div class="panel-h"><span>Day ${sv.day} 영업 준비</span></div>
+        <div class="facts">
+          <div><span class="muted">운영 예산</span><b>${won(sv.bal)}</b></div>
+          <div><span class="muted">목표 매출</span><b>${won(target(sv.day))}</b></div>
+          <div><span class="muted">생산 라인</span><b>${sv.molds}개</b></div>
+          <div><span class="muted">판매 품목</span><b>${flavors().join(', ')}</b></div>
+        </div>
+        <div class="pad"><p class="muted">판매 품목: ${flavors().join(', ')}. 영업 시간은 1분 30초입니다. 마감 10초 전부터는 새 주문이 들어오지 않고, 마감되면 정산 내용이 자동 저장됩니다. 목표 매출을 달성하면 보너스 ${won(bonus(sv.day))}이 지급됩니다.</p>
+          <div class="row-btns"><button class="btn primary" data-start="1">영업 시작</button><button class="btn" data-reset="1">기록 초기화</button></div></div>
+      </div>
+      <div class="side-col">
+        <div class="panel"><div class="panel-h"><span>개선 요청</span><span class="muted">영업 전 승인</span></div>
+          <div class="up"><div><b>생산 라인 증설</b><div class="muted">${full?'최대 라인 수에 도달했습니다.':`라인 ${sv.molds+1}개로 확장, ${won(mc)}`}</div></div><button class="btn sm" data-up="mold"${full||sv.bal<mc?' disabled':''}>승인</button></div>
+          ${MENU.filter(m=>m.cost&&!sv.menu.includes(m.f)).map(m=>`<div class="up"><div><b>${m.desc}</b><div class="muted">단가 ${won(m.price)} 품목 추가, ${won(m.cost)}</div></div><button class="btn sm" data-menu="${m.f}"${sv.bal<m.cost?' disabled':''}>승인</button></div>`).join('')}
+          <div class="up"><div><b>알바생 고용</b><div class="muted">${sv.alba?'근무 중. 완료된 붕어빵을 자동으로 회수합니다.':`완료된 붕어빵 자동 회수, ${won(ALBA_COST)}`}</div></div><button class="btn sm" data-up="alba"${sv.alba||sv.bal<ALBA_COST?' disabled':''}>승인</button></div>
+        </div>
+        ${hist.length?`<div class="panel"><div class="panel-h"><span>지난 영업 기록</span></div><div class="tblx"><table class="lines hist"><thead><tr><th>영업일</th><th class="r">매출</th><th class="r">처리</th><th class="r">이탈</th><th>목표</th></tr></thead><tbody>${hist.map(h=>`<tr><td>Day ${h.day}</td><td class="r">${won(h.sales)}</td><td class="r">${h.served}</td><td class="r">${h.lost}</td><td><span class="pill ${h.hit?'ok':'bad'}">${h.hit?'달성':'미달'}</span></td></tr>`).join('')}</tbody></table></div></div>`:''}
+      </div></div>`;
+  }
+  R.addEventListener('click',e=>{
+    const b=e.target.closest('button');if(!b||b.disabled)return;
+    if(b.dataset.start){startDay();return}
+    if(b.dataset.reset){
+      if(!resetArmed){resetArmed=true;b.textContent='한 번 더 누르면 초기화';return}
+      Object.assign(sv,{day:1,bal:0,total:0,molds:3,pizza:false,history:[]});save();toast('기록을 초기화했습니다');showReady();return;
+    }
+    if(b.dataset.up==='mold'){const c=moldCost();if(sv.bal<c||sv.molds>=MAXM)return;sv.bal-=c;sv.molds++;save();toast('생산 라인 증설이 승인되었습니다');showReady()}
+    else if(b.dataset.menu){const m=MENU.find(x=>x.f===b.dataset.menu);if(!m||sv.menu.includes(m.f)||sv.bal<m.cost)return;sv.bal-=m.cost;sv.menu.push(m.f);save();toast(`${m.f} 메뉴 출시가 승인되었습니다`);showReady()}
+    else if(b.dataset.up==='alba'){if(sv.alba||sv.bal<ALBA_COST)return;sv.bal-=ALBA_COST;sv.alba=true;save();toast('알바생 고용이 승인되었습니다');showReady()}
+  });
+
+  /* 영업 중 */
+  function startDay(){
+    phase='open';
+    st={sales:0,served:0,lost:0,waste:0,albaT:ALBA_EVERY,stock:Object.fromEntries(MENU.map(m=>[m.f,0])),
+        molds:Array.from({length:sv.molds},()=>({f:null,t:0,r:null})),orders:[],seq:1000+sv.day*100,t:0,nextOrder:1200};
+    view('open');$('#bAlba',el).hidden=!sv.alba;buildMolds();updMolds();updKpi();updStock();renderOrders();updClock();
+  }
+  const state=m=>!m.f?'idle':m.t<BAKE?'bake':m.t<BAKE+BURN?'done':'burn';
+  function buildMolds(){
+    tb.innerHTML=st.molds.map((m,i)=>`<tr data-m="${i}"><td>라인 ${String(i+1).padStart(2,'0')}</td><td class="mf"></td><td><div class="bar"><i></i></div></td><td class="ms"></td><td class="ma"></td></tr>`).join('');
+  }
+  function updMolds(){
+    st.molds.forEach((m,i)=>{
+      const tr=tb.children[i];if(!tr)return;const s=state(m);
+      const bar=tr.querySelector('.bar');
+      bar.firstElementChild.style.width=(s==='idle'?0:s==='bake'?m.t/BAKE*100:100)+'%';
+      bar.className='bar'+(s==='done'?' done':s==='burn'?' burn':'');
+      if(m.r===s)return;m.r=s;
+      tr.querySelector('.mf').textContent=m.f||'-';
+      tr.querySelector('.ms').innerHTML={idle:'<span class="pill">대기</span>',bake:'<span class="pill">생산 중</span>',done:'<span class="pill ok">완료</span>',burn:'<span class="pill bad">품질 이슈</span>'}[s];
+      tr.querySelector('.ma').innerHTML=s==='idle'?flavors().map(f=>`<button class="btn sm" data-act="put" data-f="${f}">${f}</button>`).join(' ')
+        :s==='done'?'<button class="btn sm primary" data-act="take">회수</button>'
+        :s==='burn'?'<button class="btn sm" data-act="trash">폐기</button>':'';
+    });
+  }
+  const sumOf=o=>Object.entries(o.items).reduce((s,[f,q])=>s+PRICE[f]*q,0);
+  const canServe=o=>Object.entries(o.items).every(([f,q])=>st.stock[f]>=q);
+  function newOrder(){
+    const pick=[...flavors()].sort(()=>Math.random()-.5).slice(0,Math.random()<.5?1:2);
+    const items={};pick.forEach(f=>items[f]=1+Math.floor(Math.random()*2));
+    st.orders.push({id:++st.seq,items,w:0,max:patience(sv.day)*(0.85+Math.random()*0.3)});
+  }
+  function renderOrders(){
+    $('#bQ',el).textContent=`${st.orders.length}건`;
+    if(!st.orders.length){oBox.innerHTML=`<div class="empty">${st.t>=DAY_MS-LAST_CALL?'주문 접수가 마감되었습니다.':'대기 중인 주문이 없습니다.'}</div>`;return}
+    oBox.innerHTML=st.orders.map(o=>{const ok=canServe(o);return `<div class="order" data-o="${o.id}"><div><b>주문 #${o.id}</b><div class="muted">${Object.entries(o.items).map(([f,q])=>`${f} ${q}개`).join(', ')}, ${won(sumOf(o))}</div></div><button class="btn sm${ok?' primary':''}" data-serve="${o.id}"${ok?'':' disabled'}>납품</button><div class="bar"><i></i></div></div>`}).join('');
+    updBars();
+  }
+  function updBars(){st.orders.forEach(o=>{const d=oBox.querySelector(`[data-o="${o.id}"] .bar`);if(!d)return;const p=Math.max(0,100-o.w/o.max*100);d.firstElementChild.style.width=p+'%';d.className='bar'+(p<35?' late':'')})}
+  function updKpi(){
+    $('#bSales',el).textContent=won(st.sales);
+    $('#bRate',el).textContent=Math.floor(st.sales/target(sv.day)*100)+'%';
+    $('#bServed',el).textContent=st.served+'건';$('#bLost',el).textContent=st.lost+'명';
+  }
+  function updStock(){$('#bStock',el).textContent='재고 '+flavors().map(f=>`${f} ${st.stock[f]}`).join(', ')}
+  function updClock(){
+    const rem=Math.max(0,DAY_MS-st.t);
+    $('#bClock',el).textContent=`마감까지 ${fmtTime(Math.ceil(rem/1000))}${st.t>=DAY_MS-LAST_CALL?', 주문 접수 마감':''}`;
+    $('#bProg',el).style.width=(st.t/DAY_MS*100)+'%';
+  }
+  tb.addEventListener('click',e=>{
+    const b=e.target.closest('button[data-act]');if(!b||phase!=='open')return;
+    const m=st.molds[+b.closest('tr').dataset.m];const a=b.dataset.act;
+    if(a==='put'){m.f=b.dataset.f;m.t=0}
+    else if(a==='take'){st.stock[m.f]++;m.f=null;m.t=0}
+    else{st.waste++;m.f=null;m.t=0}
+    updMolds();updStock();renderOrders();
+  });
+  oBox.addEventListener('click',e=>{
+    const b=e.target.closest('[data-serve]');if(!b||phase!=='open')return;
+    const i=st.orders.findIndex(o=>String(o.id)===b.dataset.serve);if(i<0)return;
+    const o=st.orders[i];if(!canServe(o))return;
+    for(const [f,q] of Object.entries(o.items))st.stock[f]-=q;
+    st.sales+=sumOf(o);st.served++;st.orders.splice(i,1);
+    updKpi();updStock();renderOrders();
+  });
+  ctx.every(200,()=>{
+    if(phase!=='open')return;
+    st.t+=200;st.molds.forEach(m=>{if(m.f)m.t+=200});
+    if(sv.alba){st.albaT-=200;if(st.albaT<=0){const ready=st.molds.filter(m=>state(m)==='done').sort((a,b)=>b.t-a.t)[0];
+      if(ready){st.stock[ready.f]++;ready.f=null;ready.t=0;updStock();renderOrders()}st.albaT=ALBA_EVERY}}
+    if(st.t<DAY_MS-LAST_CALL&&st.t>=st.nextOrder&&st.orders.length<5){newOrder();renderOrders();st.nextOrder=st.t+orderGap(sv.day)*(0.7+Math.random()*0.6)}
+    let gone=false;
+    st.orders=st.orders.filter(o=>{o.w+=200;if(o.w>=o.max){st.lost++;gone=true;return false}return true});
+    if(gone){renderOrders();updKpi()}
+    updMolds();updBars();updClock();
+    if(st.t>=DAY_MS)closeDay();
+  });
+
+  /* 마감 정산: 이 시점에 자동 저장 */
+  function closeDay(){
+    phase='closed';
+    st.lost+=st.orders.length;st.orders=[];
+    const day=sv.day,tgt=target(day),hit=st.sales>=tgt,bn=hit?bonus(day):0;
+    const left=Object.values(st.stock).reduce((a,b)=>a+b,0)+st.molds.filter(m=>m.f).length;
+    sv.bal+=st.sales+bn;sv.total+=st.sales+bn;
+    sv.history.push({day,sales:st.sales,served:st.served,lost:st.lost,hit});
+    sv.day++;save();
+    view('closed');$('#bDay',el).textContent=`Day ${day}`;
+    P.innerHTML=`<div class="panel report"><div class="panel-h"><span>Day ${day} 정산</span><span class="pill ${hit?'ok':'bad'}">${hit?'목표 달성':'목표 미달'}</span></div>
+      <table class="lines rep"><tbody>
+        <tr><td>매출</td><td class="r">${won(st.sales)}</td></tr>
+        <tr><td>목표 매출</td><td class="r">${won(tgt)}</td></tr>
+        <tr><td>목표 달성 보너스</td><td class="r">${won(bn)}</td></tr>
+        <tr><td>처리 주문</td><td class="r">${st.served}건</td></tr>
+        <tr><td>이탈 고객</td><td class="r">${st.lost}명</td></tr>
+        <tr><td>폐기 수량 (남은 재고 포함)</td><td class="r">${st.waste+left}개</td></tr>
+        <tr class="sum"><td>정산 후 운영 예산</td><td class="r">${won(sv.bal)}</td></tr>
+      </tbody></table>
+      <div class="pad"><p class="muted">정산 내용이 저장되었습니다. 다음에 열면 Day ${sv.day}부터 이어집니다.</p><button class="btn primary" data-next="1">Day ${sv.day} 준비</button></div></div>`;
+  }
+  P.addEventListener('click',e=>{if(e.target.closest('[data-next]'))showReady()});
+
+  showReady();
+}
+
+/* ---------- 5. 골프 (목표 달성 시뮬레이션) ---------- */
+/* 좌표: x 0~100, y 0~60 (아래가 0). 사각형은 [x, y, 너비, 높이] */
+const GOLF_HOLES=[
+  {par:2,ball:[10,30],hole:[85,30],walls:[],sand:[],water:[]},
+  {par:2,ball:[10,10],hole:[80,48],walls:[],sand:[[38,22,20,14]],water:[]},
+  {par:3,ball:[10,30],hole:[88,30],walls:[[45,0,6,44]],sand:[],water:[]},
+  {par:3,ball:[10,50],hole:[85,10],walls:[],sand:[[72,16,22,8]],water:[[35,12,28,28]]},
+  {par:3,ball:[10,10],hole:[12,50],walls:[[0,27,72,5]],sand:[],water:[]},
+  {par:4,ball:[50,5],hole:[50,55],walls:[[0,18,40,4],[60,18,40,4],[32,36,36,4]],sand:[],water:[]},
+  {par:4,ball:[10,30],hole:[90,30],walls:[[40,18,5,24]],sand:[],water:[[60,0,15,18],[60,42,15,18]]},
+  {par:5,ball:[8,10],hole:[92,10],walls:[[24,0,5,44],[50,16,5,44],[74,0,5,44]],sand:[],water:[]},
+  {par:4,ball:[8,52],hole:[90,8],walls:[[50,46,4,14]],sand:[[18,0,16,12],[74,26,20,10]],water:[[30,18,38,24]]}
+];
+function mountGolf(ctx){
+  const el=ctx.el;
+  const WX=100,WY=60,VMAX=70,DEC=28,BR=1,HR=1.8,CAP=26,BOUNCE=.7,MAXSHOT=10;
+  const FONT='"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+  const sv=Object.assign({open:0,cur:0,best:{}},store.get('golf',{}));
+  const save=()=>store.set('golf',{open:sv.open,cur:sv.cur,best:sv.best});
+
+  el.innerHTML=`<div class="golf">
+    <div class="menubar"><span>분석</span><span>시나리오</span><span>데이터</span><span>보고서</span><span class="grow"></span><span id="glTitle"></span></div>
+    <div class="golf-body">
+      <div class="gl-plot"><canvas id="glCv" aria-label="시뮬레이션 차트"></canvas></div>
+      <aside class="gl-side">
+        <section class="gl-sec">
+          <div class="gl-h"><b id="glName"></b><span class="muted" id="glPar"></span></div>
+          <div class="gl-field"><span>방향</span><input type="range" id="glDir" min="0" max="359" step="1" aria-label="방향"><input type="number" id="glDirN" min="0" max="359" aria-label="방향 값"><em>°</em></div>
+          <div class="gl-field"><span>강도</span><input type="range" id="glPow" min="5" max="100" step="1" aria-label="강도"><input type="number" id="glPowN" min="5" max="100" aria-label="강도 값"><em>%</em></div>
+          <p class="muted gl-tip">차트를 클릭하면 그 지점 방향으로 맞춰집니다.</p>
+          <div class="row-btns"><button class="btn primary" id="glRun">시뮬레이션 실행</button><button class="btn" id="glReset">처음부터</button></div>
+          <div id="glResult"></div>
+        </section>
+        <section class="gl-sec">
+          <div class="gl-h"><b>시나리오 목록</b><span class="muted" id="glTot"></span></div>
+          <table class="lines gl-card" id="glCard"></table>
+        </section>
+      </aside>
+    </div>
+    <div class="sbar"><span id="glStat"></span><span id="glRight"></span></div></div>`;
+  const cv=$('#glCv',el),g=cv.getContext('2d'),plot=$('.gl-plot',el);
+  const dI=$('#glDir',el),dN=$('#glDirN',el),pI=$('#glPow',el),pN=$('#glPowN',el),card=$('#glCard',el),res=$('#glResult',el);
+  const C={};
+  function readColors(){const cs=getComputedStyle(document.documentElement);['surface','sunken','line','line-strong','text','muted','accent','ok','bad','bad-soft','warn','warn-soft'].forEach(k=>C[k]=cs.getPropertyValue('--'+k).trim())}
+  readColors();
+  const mq=matchMedia('(prefers-color-scheme: dark)');const onMq=()=>{readColors();draw()};mq.addEventListener('change',onMq);
+
+  let W=600,H=400,sc=6,ox=40,oy=380;
+  const M={l:40,r:14,t:14,b:28};
+  const sx=x=>ox+x*sc,sy=y=>oy-y*sc;
+  let hi=Math.min(sv.cur||0,sv.open),ball=[0,0],strokes=0,trail=[],shotStart=null,moving=false,done=false,vel=[0,0];
+  let dir=0,pow=55,raf=0,last=0,splash=false,holed=false;
+
+  function layout(){
+    const r=plot.getBoundingClientRect();W=Math.max(260,r.width);H=Math.max(200,r.height);
+    const dpr=Math.min(2,window.devicePixelRatio||1);cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px';g.setTransform(dpr,0,0,dpr,0,0);
+    sc=Math.min((W-M.l-M.r)/WX,(H-M.t-M.b)/WY);
+    ox=M.l+((W-M.l-M.r)-WX*sc)/2;oy=M.t+((H-M.t-M.b)-WY*sc)/2+WY*sc;draw();
+  }
+  const ro=new ResizeObserver(layout);ro.observe(plot);
+
+  /* drawing */
+  function ln(x1,y1,x2,y2){g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke()}
+  function zone(r,fill,stroke,label,alpha){
+    const X=sx(r[0]),Y=sy(r[1]+r[3]),w=r[2]*sc,h=r[3]*sc;
+    g.globalAlpha=alpha||1;g.fillStyle=fill;g.fillRect(X,Y,w,h);g.globalAlpha=1;
+    g.strokeStyle=stroke;g.lineWidth=1;g.strokeRect(Math.round(X)+.5,Math.round(Y)+.5,Math.round(w)-1,Math.round(h)-1);
+    if(label&&w>64&&h>18){g.fillStyle=stroke;g.font='11px '+FONT;g.textAlign='left';g.textBaseline='top';g.fillText(label,X+6,Y+5)}
+  }
+  function draw(){
+    if(!GOLF_HOLES[hi])return;
+    const h=GOLF_HOLES[hi];
+    g.fillStyle=C.surface;g.fillRect(0,0,W,H);
+    g.lineWidth=1;g.font='11px '+FONT;
+    for(let x=0;x<=WX;x+=10){const X=Math.round(sx(x))+.5;g.strokeStyle=C.line;ln(X,sy(0),X,sy(WY));g.fillStyle=C.muted;g.textAlign='center';g.textBaseline='top';g.fillText(String(x),X,sy(0)+6)}
+    for(let y=0;y<=WY;y+=10){const Y=Math.round(sy(y))+.5;g.strokeStyle=C.line;ln(sx(0),Y,sx(WX),Y);g.fillStyle=C.muted;g.textAlign='right';g.textBaseline='middle';g.fillText(String(y),sx(0)-6,Y)}
+    g.strokeStyle=C['line-strong'];ln(sx(0),sy(0)+.5,sx(WX),sy(0)+.5);ln(sx(0)-.5,sy(0),sx(0)-.5,sy(WY));
+    g.fillStyle=C.muted;g.textAlign='left';g.textBaseline='top';g.fillText('효과 지수',sx(0)+6,sy(WY)+4);
+    g.textAlign='right';g.textBaseline='bottom';g.fillText('비용 지수',sx(WX)-6,sy(0)-4);
+    h.water.forEach(r=>zone(r,C['bad-soft'],C.bad,'손실 구간'));
+    h.sand.forEach(r=>zone(r,C['warn-soft'],C.warn,'리스크 구간'));
+    h.walls.forEach(r=>zone(r,C['line-strong'],C.muted,'제약 조건',.45));
+    g.setLineDash([2,3]);g.lineWidth=1.2;
+    trail.forEach((t,i)=>{g.strokeStyle=i===trail.length-1?C.accent:C.muted;g.beginPath();t.forEach((p,k)=>k?g.lineTo(sx(p[0]),sy(p[1])):g.moveTo(sx(p[0]),sy(p[1])));g.stroke()});
+    g.setLineDash([]);g.lineWidth=1;
+    const hx=sx(h.hole[0]),hy=sy(h.hole[1]),hr=Math.max(5,HR*sc);
+    g.strokeStyle=C.ok;g.lineWidth=1.5;g.beginPath();g.arc(hx,hy,hr,0,Math.PI*2);g.stroke();g.lineWidth=1;
+    ln(hx-hr-4,hy,hx+hr+4,hy);ln(hx,hy-hr-4,hx,hy+hr+4);
+    g.fillStyle=C.ok;g.font='600 11px '+FONT;g.textAlign='left';g.textBaseline='bottom';g.fillText('목표',hx+hr+4,hy-3);
+    const bx=sx(ball[0]),by=sy(ball[1]);
+    if(!moving&&!done){
+      const a=dir*Math.PI/180,L=(8+pow*.22)*sc;
+      g.strokeStyle=C.muted;g.setLineDash([4,4]);ln(bx,by,bx+Math.cos(a)*L,by-Math.sin(a)*L);g.setLineDash([]);
+    }
+    g.fillStyle=C.accent;g.beginPath();g.arc(bx,by,Math.max(4,BR*sc*.9),0,Math.PI*2);g.fill();
+    if(!done){g.fillStyle=C.text;g.font='11px '+FONT;g.textAlign='left';g.textBaseline='top';g.fillText('현재안',bx+7,by+4)}
+  }
+
+  /* physics */
+  const inR=(p,r,pad=0)=>p[0]>r[0]-pad&&p[0]<r[0]+r[2]+pad&&p[1]>r[1]-pad&&p[1]<r[1]+r[3]+pad;
+  function physics(dt){
+    const h=GOLF_HOLES[hi];let sp=Math.hypot(vel[0],vel[1]);
+    const dec=(h.sand.some(r=>inR(ball,r))?DEC*3.5:DEC)*dt;
+    if(sp<=dec||sp<.6){vel=[0,0];moving=false;return}
+    vel[0]-=vel[0]/sp*dec;vel[1]-=vel[1]/sp*dec;
+    ball[0]+=vel[0]*dt;ball[1]+=vel[1]*dt;
+    if(ball[0]<BR){ball[0]=BR;vel[0]=Math.abs(vel[0])*BOUNCE}
+    if(ball[0]>WX-BR){ball[0]=WX-BR;vel[0]=-Math.abs(vel[0])*BOUNCE}
+    if(ball[1]<BR){ball[1]=BR;vel[1]=Math.abs(vel[1])*BOUNCE}
+    if(ball[1]>WY-BR){ball[1]=WY-BR;vel[1]=-Math.abs(vel[1])*BOUNCE}
+    for(const w of h.walls){
+      if(!inR(ball,w,BR))continue;
+      const pl=ball[0]-(w[0]-BR),pr=w[0]+w[2]+BR-ball[0],pb=ball[1]-(w[1]-BR),pt=w[1]+w[3]+BR-ball[1],m=Math.min(pl,pr,pb,pt);
+      if(m===pl){ball[0]=w[0]-BR;vel[0]=-Math.abs(vel[0])*BOUNCE}
+      else if(m===pr){ball[0]=w[0]+w[2]+BR;vel[0]=Math.abs(vel[0])*BOUNCE}
+      else if(m===pb){ball[1]=w[1]-BR;vel[1]=-Math.abs(vel[1])*BOUNCE}
+      else{ball[1]=w[1]+w[3]+BR;vel[1]=Math.abs(vel[1])*BOUNCE}
+    }
+    if(h.water.some(r=>inR(ball,r))){vel=[0,0];moving=false;splash=true;return}
+    const d=Math.hypot(ball[0]-h.hole[0],ball[1]-h.hole[1]);sp=Math.hypot(vel[0],vel[1]);
+    if(d<HR){if(sp<CAP){ball=[...h.hole];vel=[0,0];moving=false;holed=true}else{vel[0]*=.9;vel[1]*=.9}}
+  }
+  function step(ts){
+    raf=requestAnimationFrame(step);
+    const dt=Math.min(.04,(ts-last)/1000||0);last=ts;
+    if(S.paused||document.hidden)return;
+    for(let i=0;i<6&&moving;i++)physics(dt/6);
+    const t=trail[trail.length-1],lp=t[t.length-1];
+    if(Math.hypot(lp[0]-ball[0],lp[1]-ball[1])>1)t.push([...ball]);
+    draw();
+    if(!moving){cancelAnimationFrame(raf);t.push([...ball]);afterShot()}
+  }
+
+  /* flow */
+  const status=t=>{$('#glStat',el).textContent=t};
+  function setDir(v){v=((Math.round(v)%360)+360)%360;dir=v;dI.value=v;dN.value=v;draw()}
+  function setPow(v){v=Math.max(5,Math.min(100,Math.round(v)));pow=v;pI.value=v;pN.value=v;draw()}
+  function aimAt(p){setDir(Math.atan2(p[1]-ball[1],p[0]-ball[0])*180/Math.PI)}
+  function loadHole(i){
+    cancelAnimationFrame(raf);hi=i;sv.cur=i;save();
+    const h=GOLF_HOLES[i];ball=[...h.ball];strokes=0;trail=[];moving=false;done=false;splash=false;holed=false;res.innerHTML='';
+    aimAt(h.hole);setPow(55);renderSide();draw();
+    status('방향과 강도를 맞춘 뒤 시뮬레이션을 실행하세요.');
+  }
+  function run(){
+    if(moving||done)return;
+    strokes++;shotStart=[...ball];
+    const a=dir*Math.PI/180,v=pow/100*VMAX;vel=[Math.cos(a)*v,Math.sin(a)*v];
+    moving=true;trail.push([[...ball]]);renderSide();status('시뮬레이션 진행 중…');
+    last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(step);
+  }
+  function afterShot(){
+    const h=GOLF_HOLES[hi];
+    if(holed){holed=false;finishHole();return}
+    if(splash){splash=false;strokes++;ball=[...shotStart];status('손실 구간에 진입했습니다. 실행 1회가 추가되고 이전 위치로 돌아갑니다.')}
+    else status(`실행 ${strokes}회 완료. 목표까지 거리 ${Math.hypot(ball[0]-h.hole[0],ball[1]-h.hole[1]).toFixed(1)}`);
+    if(strokes>=MAXSHOT){strokes=MAXSHOT;finishHole(true);return}
+    renderSide();draw();
+  }
+  function finishHole(capped){
+    const h=GOLF_HOLES[hi];done=true;
+    const prev=sv.best[hi];if(prev===undefined||strokes<prev)sv.best[hi]=strokes;
+    if(hi===sv.open&&sv.open<GOLF_HOLES.length-1)sv.open++;
+    save();
+    const diff=strokes-h.par;
+    const label=capped?'실행 한도에 도달했습니다':strokes===1?'단번에 달성':diff<0?`기준보다 ${-diff}회 적음`:diff===0?'기준 달성':`기준보다 ${diff}회 많음`;
+    const last=hi===GOLF_HOLES.length-1;
+    res.innerHTML=`<div class="gl-res"><div><b>${capped?'시나리오 종료':'목표 도달'}</b>, 실행 ${strokes}회. ${label}</div>${last?'<div class="muted">마지막 시나리오입니다. 목록에서 다른 시나리오를 다시 해볼 수 있어요.</div>':'<div><button class="btn primary sm" data-next="1">다음 시나리오</button></div>'}</div>`;
+    status('결과가 저장되었습니다.');renderSide();draw();
+  }
+  function renderSide(){
+    const h=GOLF_HOLES[hi];
+    $('#glName',el).textContent=`시나리오 ${hi+1}`;
+    $('#glPar',el).textContent=`기준 ${h.par}회, 현재 ${strokes}회`;
+    $('#glTitle',el).textContent=`시나리오 ${hi+1} / ${GOLF_HOLES.length}`;
+    let tp=0,tb=0,cnt=0;
+    const rows=GOLF_HOLES.map((x,i)=>{const b=sv.best[i],lock=i>sv.open;if(b!==undefined){tp+=x.par;tb+=b;cnt++}
+      return `<tr data-h="${i}" class="${i===hi?'on':''}${lock?' locked':''}"><td>시나리오 ${i+1}</td><td class="r">${x.par}</td><td class="r">${lock?'잠김':b===undefined?'-':b}</td></tr>`}).join('');
+    card.innerHTML=`<thead><tr><th>항목</th><th class="r">기준</th><th class="r">최고</th></tr></thead><tbody>${rows}</tbody>`;
+    $('#glTot',el).textContent=cnt?`기준 대비 ${tb-tp>0?'+':''}${tb-tp}`:'';
+    $('#glRight',el).textContent=`완료 ${Object.keys(sv.best).length}/${GOLF_HOLES.length}`;
+    $('#glRun',el).disabled=moving||done;
+  }
+
+  dI.addEventListener('input',()=>setDir(+dI.value));
+  dN.addEventListener('change',()=>setDir(+dN.value||0));
+  pI.addEventListener('input',()=>setPow(+pI.value));
+  pN.addEventListener('change',()=>setPow(+pN.value||5));
+  [dN,pN].forEach(n=>n.addEventListener('keydown',e=>{if(e.key==='Enter'){n.dispatchEvent(new Event('change'));run()}}));
+  $('#glRun',el).addEventListener('click',run);
+  $('#glReset',el).addEventListener('click',()=>loadHole(hi));
+  res.addEventListener('click',e=>{if(e.target.closest('[data-next]'))loadHole(Math.min(hi+1,GOLF_HOLES.length-1))});
+  card.addEventListener('click',e=>{const r=e.target.closest('tr[data-h]');if(!r||r.classList.contains('locked')||moving)return;loadHole(+r.dataset.h)});
+  cv.addEventListener('click',e=>{
+    if(moving||done)return;const r=cv.getBoundingClientRect();
+    aimAt([(e.clientX-r.left-ox)/sc,(oy-(e.clientY-r.top))/sc]);
+  });
+
+  loadHole(hi);
+  return ()=>{cancelAnimationFrame(raf);ro.disconnect();mq.removeEventListener('change',onMq)};
+}
+
+/* ---------- 6. 피자 (사내 케이터링 발주 / 반반 / 화덕 / 단골) ---------- */
+const PZ={dough:['오리지널','씬','치즈크러스트'],sauce:['토마토','크림','바비큐'],cheese:['기본','추가','없음'],
+  tops:['페퍼로니','불고기','버섯','올리브','양파','피망','베이컨','옥수수','새우','파인애플','감자'],unlock:[6,8,11]};
+const PZ_REG={'재무팀':['dough','씬'],'인사팀':['cheese','추가'],'법무팀':['sauce','크림'],'IT운영팀':['dough','치즈크러스트']};
+const PZ_FIELD={dough:'도우',sauce:'소스',cheese:'치즈'};
+const PZ_TEAMS=['마케팅팀','영업1팀','영업2팀','인사팀','재무팀','IT운영팀','고객지원팀','디자인팀','법무팀','전략기획팀'];
+function mountPizza(ctx){
+  const el=ctx.el;
+  const sv=Object.assign({day:1,total:0,bal:null,oven:0,history:[]},store.get('pizza',{}));
+  if(!(sv.day>=1))sv.day=1;if(!Array.isArray(sv.history))sv.history=[];
+  if(typeof sv.bal!=='number')sv.bal=sv.total||0;
+  const save=()=>store.set('pizza',{day:sv.day,total:sv.total,bal:sv.bal,oven:sv.oven,history:sv.history.slice(-30)});
+  const REG_DAY=2,HALF_DAY=3,OVEN_MAX=3,ovenCost=lv=>15000*(lv+1);
+  const half=o=>o.half;
+  const tops=d=>PZ.tops.slice(0,PZ.unlock[Math.min(d,3)-1]);
+  const count=d=>4+d;
+  const patience=d=>Math.max(28,60-d*4)*1000*(1+.15*sv.oven);
+  const gap=d=>Math.max(4500,10000-d*800);
+  const target=d=>count(d)*9000;
+  const BONUS=3000;
+  const price=o=>10000+1500*(o.half?o.left.length+o.right.length:o.tops.length);
+  const topsText=o=>o.half?`왼쪽 ${o.left.join(', ')} / 오른쪽 ${o.right.join(', ')}`:o.tops.join(', ');
+  let st=null,phase='ready',resetArmed=false;
+
+  el.innerHTML=`<div class="dash">
+    <div class="dayhead"><div><div class="k">영업일</div><div class="dayno" id="pzDay"></div></div>
+      <div class="dayprog" id="pzProgWrap" hidden><div class="k" id="pzProgT"></div><div class="bar"><i id="pzProg"></i></div></div></div>
+    <section id="pzReady"></section>
+    <section id="pzOpen" class="pz-open" hidden>
+      <div class="kpis">
+        <div class="kpi"><div class="k">오늘 매출</div><div class="v" id="pzSales"></div></div>
+        <div class="kpi"><div class="k">처리 요청</div><div class="v" id="pzDone"></div></div>
+        <div class="kpi"><div class="k">정확 출고</div><div class="v" id="pzPerfect"></div></div>
+        <div class="kpi"><div class="k">반품, 이탈</div><div class="v" id="pzBad"></div></div>
+      </div>
+      <div class="pz-cols">
+        <div class="panel"><div class="panel-h"><span>접수 대기 <span class="muted" id="pzQ"></span></span><button class="btn sm" id="pzMemoBtn" hidden aria-expanded="false">단골 메모</button></div><div class="pz-memo" id="pzMemo" hidden></div><div id="pzOrders"></div></div>
+        <div class="panel"><div class="panel-h"><span>발주 사양 입력</span><span class="muted" id="pzFor"></span></div>
+          <div class="pz-form" id="pzForm"></div>
+          <div class="pad"><div class="pz-sum" id="pzSum"></div>
+            <div class="row-btns"><button class="btn primary" id="pzSend">출고 처리</button><button class="btn" id="pzClear">입력 초기화</button></div>
+            <div class="pz-log" id="pzLog"></div></div>
+        </div>
+      </div>
+    </section>
+    <section id="pzReport" hidden></section>
+  </div>`;
+  const R=$('#pzReady',el),O=$('#pzOpen',el),P=$('#pzReport',el),oBox=$('#pzOrders',el),form=$('#pzForm',el),logBox=$('#pzLog',el);
+  function view(v){R.hidden=v!=='ready';O.hidden=v!=='open';P.hidden=v!=='closed';$('#pzProgWrap',el).hidden=v!=='open';$('#pzDay',el).textContent=`Day ${sv.day}`}
+
+  /* 준비 */
+  function showReady(){
+    phase='ready';resetArmed=false;view('ready');
+    const prevN=sv.day>1?tops(sv.day-1).length:0,now=tops(sv.day),fresh=sv.day<=3&&prevN<now.length&&sv.day>1?now.slice(prevN):[];
+    const news=[];if(fresh.length)news.push(`토핑 ${fresh.join(', ')} 추가`);if(sv.day===REG_DAY)news.push('단골 팀 요청 시작');if(sv.day===HALF_DAY)news.push('반반 주문 시작');
+    const oc=ovenCost(sv.oven),ovenFull=sv.oven>=OVEN_MAX;
+    const hist=sv.history.slice(-5).reverse();
+    R.innerHTML=`<div class="cols">
+      <div class="panel"><div class="panel-h"><span>Day ${sv.day} 발주 준비</span></div>
+        <div class="facts">
+          <div><span class="muted">운영 예산</span><b>${won(sv.bal)}</b></div>
+          <div><span class="muted">오늘 요청 예정</span><b>${count(sv.day)}건</b></div>
+          <div><span class="muted">목표 매출</span><b>${won(target(sv.day))}</b></div>
+          <div><span class="muted">화덕</span><b>Lv.${sv.oven+1}</b></div>
+        </div>
+        <div class="pad"><p class="muted">각 팀에서 들어오는 요청서를 선택하고, 사양에 맞게 도우, 소스, 치즈, 토핑을 입력해 출고하세요. 정확히 맞추면 남은 대기 시간에 따라 추가금이 붙고, 정확도가 60% 미만이면 반품됩니다. 모든 요청을 처리하면 정산 후 저장됩니다.${sv.day>=REG_DAY?' 단골 팀의 요청서에 ‘평소대로’라고 적힌 항목은 단골 메모를 참고하세요.':''}${sv.day>=HALF_DAY?' 반반 주문은 반반 구성을 켜고 왼쪽과 오른쪽 토핑을 따로 입력합니다.':''}</p>
+          ${news.length?`<p class="pz-new">오늘부터: ${news.join(', ')}</p>`:''}
+          <div class="row-btns"><button class="btn primary" data-start="1">발주 시작</button><button class="btn" data-reset="1">기록 초기화</button></div></div>
+      </div>
+      <div class="side-col">
+        <div class="panel"><div class="panel-h"><span>설비 개선</span><span class="muted">영업 전 승인</span></div>
+          <div class="up"><div><b>화덕 업그레이드</b><div class="muted">${ovenFull?'최고 단계입니다.':`Lv.${sv.oven+2}, 요청 대기 시간 15% 증가, ${won(oc)}`}</div></div><button class="btn sm" data-oven="1"${ovenFull||sv.bal<oc?' disabled':''}>승인</button></div>
+        </div>
+        ${sv.day>=REG_DAY?`<div class="panel"><div class="panel-h"><span>단골 메모</span></div><div class="pz-memo">${memoHtml()}</div></div>`:''}
+        ${hist.length?`<div class="panel"><div class="panel-h"><span>지난 발주 기록</span></div><div class="tblx"><table class="lines hist"><thead><tr><th>영업일</th><th class="r">매출</th><th class="r">정확</th><th class="r">반품</th><th>목표</th></tr></thead><tbody>${hist.map(h=>`<tr><td>Day ${h.day}</td><td class="r">${won(h.sales)}</td><td class="r">${h.perfect}</td><td class="r">${h.returned+h.lost}</td><td><span class="pill ${h.hit?'ok':'bad'}">${h.hit?'달성':'미달'}</span></td></tr>`).join('')}</tbody></table></div></div>`:'<div class="panel"><div class="empty">아직 발주 기록이 없습니다.</div></div>'}
+      </div></div>`;
+  }
+  R.addEventListener('click',e=>{
+    const b=e.target.closest('button');if(!b)return;
+    if(b.dataset.start)startDay();
+    else if(b.dataset.reset){
+      if(!resetArmed){resetArmed=true;b.textContent='한 번 더 누르면 초기화';return}
+      Object.assign(sv,{day:1,total:0,bal:0,oven:0,history:[]});save();toast('기록을 초기화했습니다');showReady();
+    }
+    else if(b.dataset.oven){const c=ovenCost(sv.oven);if(sv.oven>=OVEN_MAX||sv.bal<c)return;sv.bal-=c;sv.oven++;save();toast('화덕 업그레이드가 승인되었습니다');showReady()}
+  });
+
+  function memoHtml(){return Object.entries(PZ_REG).map(([t,[f,v]])=>`<div><b>${t}</b><span>${PZ_FIELD[f]} ${v}</span></div>`).join('')}
+  /* 영업 */
+  function buildForm(){
+    const seg=(n,label,opts,type)=>`<fieldset class="pz-fs"><legend>${label}</legend><div class="chips">${opts.map(o=>`<label class="chip"><input type="${type}" name="pz-${n}" value="${o}"><span>${o}</span></label>`).join('')}</div></fieldset>`;
+    const halfOk=sv.day>=HALF_DAY;
+    form.innerHTML=seg('dough','도우',PZ.dough,'radio')+seg('sauce','소스',PZ.sauce,'radio')+seg('cheese','치즈',PZ.cheese,'radio')
+      +(halfOk?`<div class="pz-half"><label class="chip"><input type="checkbox" id="pzHalf"><span>반반 구성</span></label></div>`:'')
+      +`<div id="pzWhole">${seg('tops','토핑',tops(sv.day),'checkbox')}</div>`
+      +(halfOk?`<div id="pzHalves" hidden>${seg('left','토핑 (왼쪽 절반)',tops(sv.day),'checkbox')}${seg('right','토핑 (오른쪽 절반)',tops(sv.day),'checkbox')}</div>`:'');
+  }
+  function readForm(){
+    const v=n=>{const i=form.querySelector(`input[name="pz-${n}"]:checked`);return i?i.value:null};
+    const list=n=>[...form.querySelectorAll(`input[name="pz-${n}"]:checked`)].map(i=>i.value);
+    const h=$('#pzHalf',form);
+    return {dough:v('dough'),sauce:v('sauce'),cheese:v('cheese'),half:!!(h&&h.checked),tops:list('tops'),left:list('left'),right:list('right')};
+  }
+  function syncHalf(){const h=$('#pzHalf',form);if(!h)return;$('#pzWhole',form).hidden=h.checked;$('#pzHalves',form).hidden=!h.checked}
+  function clearForm(){form.querySelectorAll('input').forEach(i=>i.checked=false);syncHalf();updSum()}
+  function updSum(){
+    const f=readForm();
+    const t=f.half?`반반: 왼쪽 ${f.left.join(', ')||'없음'} / 오른쪽 ${f.right.join(', ')||'없음'}`:(f.tops.length?f.tops.join(', '):'토핑 없음');
+    $('#pzSum',el).textContent=`구성: ${f.dough||'도우 미선택'} / ${f.sauce||'소스 미선택'} / 치즈 ${f.cheese||'미선택'} / ${t}`;
+  }
+  form.addEventListener('change',e=>{if(e.target.id==='pzHalf')syncHalf();updSum()});
+  const memoBtn=$('#pzMemoBtn',el),memoBox=$('#pzMemo',el);
+  memoBtn.addEventListener('click',()=>{const open=memoBox.hidden;memoBox.hidden=!open;memoBtn.setAttribute('aria-expanded',String(open))});
+  function startDay(){
+    phase='open';
+    st={seq:2000+sv.day*100,spawned:0,done:0,sales:0,perfect:0,returned:0,lost:0,orders:[],t:0,nextAt:800,sel:null};
+    view('open');buildForm();clearForm();logBox.innerHTML='';
+    memoBtn.hidden=sv.day<REG_DAY;memoBox.hidden=true;memoBox.innerHTML=memoHtml();memoBtn.setAttribute('aria-expanded','false');
+    renderOrders();updKpi();updProg();
+  }
+  function makeOrder(){
+    const d=sv.day,pool=tops(d);
+    const pickN=n=>PZ.tops.filter(x=>[...pool].sort(()=>Math.random()-.5).slice(0,n).includes(x));
+    const rush=Math.random()<.2;
+    const regTeams=Object.keys(PZ_REG);
+    const team=d>=REG_DAY&&Math.random()<.35?rand(regTeams):rand(PZ_TEAMS);
+    const o={id:++st.seq,team,dough:rand(PZ.dough),sauce:rand(PZ.sauce),cheese:d===1?rand(['기본','기본','추가']):rand(PZ.cheese),
+      w:0,max:patience(d)*(.9+Math.random()*.2)*(rush?.7:1),rush,reg:null,half:false,tops:[],left:[],right:[]};
+    if(d>=REG_DAY&&PZ_REG[team]){const [f,v]=PZ_REG[team];o[f]=v;o.reg=f}
+    if(d>=HALF_DAY&&Math.random()<.3){
+      o.half=true;o.left=pickN(1+Math.floor(Math.random()*2));
+      do{o.right=pickN(1+Math.floor(Math.random()*2))}while(o.right.join()===o.left.join());
+      o.tops=PZ.tops.filter(x=>o.left.includes(x)||o.right.includes(x));o.max*=1.15;
+    }else o.tops=pickN(Math.min(pool.length,1+Math.floor(Math.random()*Math.min(5,2+d))));
+    return o;
+  }
+  function select(id){st.sel=id;const o=st.orders.find(x=>x.id===id);$('#pzFor',el).textContent=o?`요청 #${o.id}, ${o.team}`:'';renderOrders()}
+  function renderOrders(){
+    $('#pzQ',el).textContent=`${st.orders.length}건`;
+    if(st.sel===null&&st.orders.length){st.sel=st.orders[0].id;const o=st.orders[0];$('#pzFor',el).textContent=`요청 #${o.id}, ${o.team}`}
+    if(!st.orders.length){$('#pzFor',el).textContent='';oBox.innerHTML=`<div class="empty">${st.spawned>=count(sv.day)?'오늘 접수가 마감되었습니다.':'새 요청을 기다리는 중입니다.'}</div>`;return}
+    oBox.innerHTML=st.orders.map(o=>`<div class="pz-ord${o.id===st.sel?' on':''}" data-o="${o.id}" role="button" tabindex="0" aria-pressed="${o.id===st.sel}">
+      <div class="pz-ord-h"><b>요청 #${o.id}</b><span class="muted">${o.team}</span><span class="pz-tags">${o.reg?'<span class="pill">단골</span>':''}${o.half?'<span class="pill">반반</span>':''}${o.rush?'<span class="pill bad">긴급</span>':''}</span></div>
+      <dl class="pz-spec">${['dough','sauce','cheese'].map(f=>`<dt>${PZ_FIELD[f]}</dt><dd>${o.reg===f?'<em class="pz-usual">평소대로</em>':o[f]}</dd>`).join('')}${o.half?`<dt>왼쪽</dt><dd>${o.left.join(', ')}</dd><dt>오른쪽</dt><dd>${o.right.join(', ')}</dd>`:`<dt>토핑</dt><dd>${o.tops.join(', ')}</dd>`}</dl>
+      <div class="bar"><i></i></div></div>`).join('');
+    updBars();
+  }
+  function updBars(){st.orders.forEach(o=>{const d=oBox.querySelector(`[data-o="${o.id}"] .bar`);if(!d)return;const p=Math.max(0,100-o.w/o.max*100);d.firstElementChild.style.width=p+'%';d.className='bar'+(p<35?' late':'')})}
+  function updKpi(){
+    $('#pzSales',el).textContent=won(st.sales);$('#pzDone',el).textContent=`${st.done}/${count(sv.day)}`;
+    $('#pzPerfect',el).textContent=st.perfect+'건';$('#pzBad',el).textContent=(st.returned+st.lost)+'건';
+  }
+  function updProg(){const n=count(sv.day);$('#pzProgT',el).textContent=`처리 ${st.done}/${n}건, 접수 ${st.spawned}/${n}건`;$('#pzProg',el).style.width=(st.done/n*100)+'%'}
+  function addLog(text,cls){const d=document.createElement('div');d.className=cls||'';d.textContent=text;logBox.prepend(d);while(logBox.children.length>4)logBox.lastChild.remove()}
+  function send(){
+    if(phase!=='open')return;
+    const o=st.orders.find(x=>x.id===st.sel);if(!o){addLog('처리할 요청을 먼저 선택하세요.','bad');return}
+    const f=readForm();if(!f.dough||!f.sauce||!f.cheese){addLog('도우, 소스, 치즈를 모두 선택하세요.','bad');return}
+    const okD=f.dough===o.dough,okS=f.sauce===o.sauce,okC=f.cheese===o.cheese;
+    const cmp=(want,got)=>{const miss=want.filter(t=>!got.includes(t)),extra=got.filter(t=>!want.includes(t));return {miss,extra,score:Math.max(0,1-(miss.length+extra.length)/Math.max(1,want.length))}};
+    const topNotes=[];let tScore;
+    if(o.half&&f.half){
+      const L=cmp(o.left,f.left),Rr=cmp(o.right,f.right);tScore=(L.score+Rr.score)/2;
+      [['왼쪽',L],['오른쪽',Rr]].forEach(([k,r])=>{if(r.miss.length)topNotes.push(`${k} 누락 ${r.miss.join(', ')}`);if(r.extra.length)topNotes.push(`${k} 불필요 ${r.extra.join(', ')}`)});
+    }else{
+      const got=f.half?[...new Set([...f.left,...f.right])]:f.tops,r=cmp(o.tops,got);
+      tScore=r.score*(o.half!==f.half?.5:1);
+      if(o.half&&!f.half)topNotes.push('반반 구성 누락');if(!o.half&&f.half)topNotes.push('반반 구성 불필요');
+      if(r.miss.length)topNotes.push(`누락 ${r.miss.join(', ')}`);if(r.extra.length)topNotes.push(`불필요 ${r.extra.join(', ')}`);
+    }
+    const acc=(+okD+(+okS)+(+okC)+tScore*2)/5,base=price(o);
+    let pay=0,tip=0,res;
+    if(acc<.6){st.returned++;res='반품'}
+    else{pay=Math.round(base*acc/100)*100;if(acc===1){st.perfect++;tip=Math.round(base*.2*(1-o.w/o.max)*(o.rush?2:1)/100)*100;res='정확'}else res='부분 일치'}
+    st.sales+=pay+tip;st.done++;
+    st.orders=st.orders.filter(x=>x!==o);st.sel=null;
+    const notes=[];
+    if(!okD)notes.push(`도우 오류(요청 ${o.dough})`);if(!okS)notes.push(`소스 오류(요청 ${o.sauce})`);if(!okC)notes.push(`치즈 오류(요청 ${o.cheese})`);
+    if(o.reg&&o[o.reg]!==f[o.reg])notes.push(`${o.team} 단골 취향은 ${PZ_FIELD[o.reg]} ${o[o.reg]}`);
+    notes.push(...topNotes);
+    addLog(`#${o.id} ${res} ${Math.round(acc*100)}%, ${won(pay+tip)}${tip?` (추가금 ${won(tip)} 포함)`:''}${notes.length?`. ${notes.join(', ')}`:''}`,acc===1?'ok':acc<.6?'bad':'');
+    clearForm();renderOrders();updKpi();updProg();checkEnd();
+  }
+  oBox.addEventListener('click',e=>{const c=e.target.closest('[data-o]');if(c)select(+c.dataset.o)});
+  oBox.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){const c=e.target.closest('[data-o]');if(c){e.preventDefault();select(+c.dataset.o)}}});
+  $('#pzSend',el).addEventListener('click',send);
+  $('#pzClear',el).addEventListener('click',clearForm);
+  function checkEnd(){if(st.spawned>=count(sv.day)&&!st.orders.length)closeDay()}
+  ctx.every(200,()=>{
+    if(phase!=='open')return;st.t+=200;
+    if(st.spawned<count(sv.day)&&(st.t>=st.nextAt||!st.orders.length&&st.t>=st.nextAt-3000)){
+      st.orders.push(makeOrder());st.spawned++;st.nextAt=st.t+gap(sv.day)*(.75+Math.random()*.5);renderOrders();updProg();
+    }
+    let gone=false;
+    st.orders=st.orders.filter(o=>{o.w+=200;if(o.w>=o.max){st.lost++;st.done++;gone=true;addLog(`#${o.id} 대기 시간 초과로 ${o.team} 요청이 취소되었습니다.`,'bad');if(st.sel===o.id)st.sel=null;return false}return true});
+    if(gone){renderOrders();updKpi();updProg();checkEnd()}
+    updBars();
+  });
+
+  /* 정산 */
+  function closeDay(){
+    if(phase!=='open')return;phase='closed';
+    const day=sv.day,tgt=target(day),hit=st.sales>=tgt,bn=hit?BONUS:0;
+    sv.total+=st.sales+bn;sv.bal+=st.sales+bn;sv.history.push({day,sales:st.sales,perfect:st.perfect,returned:st.returned,lost:st.lost,hit});sv.day++;save();
+    view('closed');$('#pzDay',el).textContent=`Day ${day}`;
+    P.innerHTML=`<div class="panel report"><div class="panel-h"><span>Day ${day} 정산</span><span class="pill ${hit?'ok':'bad'}">${hit?'목표 달성':'목표 미달'}</span></div>
+      <table class="lines rep"><tbody>
+        <tr><td>매출</td><td class="r">${won(st.sales)}</td></tr>
+        <tr><td>목표 매출</td><td class="r">${won(tgt)}</td></tr>
+        <tr><td>목표 달성 보너스</td><td class="r">${won(bn)}</td></tr>
+        <tr><td>정확 출고</td><td class="r">${st.perfect}건</td></tr>
+        <tr><td>반품</td><td class="r">${st.returned}건</td></tr>
+        <tr><td>대기 초과 취소</td><td class="r">${st.lost}건</td></tr>
+        <tr class="sum"><td>정산 후 운영 예산</td><td class="r">${won(sv.bal)}</td></tr>
+      </tbody></table>
+      <div class="pad"><p class="muted">정산 내용이 저장되었습니다. 다음에 열면 Day ${sv.day}부터 이어집니다.</p><button class="btn primary" data-next="1">Day ${sv.day} 준비</button></div></div>`;
+  }
+  P.addEventListener('click',e=>{if(e.target.closest('[data-next]'))showReady()});
+  showReady();
+}
+
+/* ---------- boot ---------- */
+renderNav();
+const startId=location.hash.slice(1);
+go(GAMES.some(g=>g.id===startId)?startId:'home');
+</script>
+</body>
+</html>
